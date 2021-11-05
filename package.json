@@ -1,0 +1,52 @@
+{
+  "name": "d-classroom-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/app",
+    "dev": "./node_modules/nodemon/bin/nodemon.js ./src/app",
+    "start:dev": "nodemon --inspect=0.0.0.0:9231 ./src/app",
+    "start:prod": "export NODE_ENV=production&&node ./src/app",
+    "lint": "eslint --report-unused-disable-directives .",
+    "lint:fix": "eslint --fix ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/photridung123/d-classroom-service.git"
+  },
+  "author": "photridung",
+  "license": "ISC",
+  "dependencies": {
+    "app-root-path": "^2.2.1",
+    "axios": "^0.20.0",
+    "bluebird": "^3.7.2",
+    "body-parser": "^1.19.0",
+    "config": "^3.0.1",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "elasticsearch": "^16.5.0",
+    "express": "^4.16.4",
+    "express-fileupload": "^1.2.0",
+    "fs": "0.0.1-security",
+    "generate-password": "^1.4.2",
+    "helmet": "^4.1.1",
+    "lodash": "^4.17.20",
+    "md5": "^2.3.0",
+    "moment": "^2.26.0",
+    "morgan": "^1.10.0",
+    "mysql": "^2.17.1",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0",
+    "passport-oauth2": "^1.5.0",
+    "passport-oauth2-middleware": "^1.0.3",
+    "passport-oauth2-refresh": "^1.1.0",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "nodemon": "^1.18.10"
+  }
+}
