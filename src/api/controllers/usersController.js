@@ -9,7 +9,7 @@ const usersService = require('../services/usersService');
 const service = new usersService();
 
 // Register a new user
-router.post('/register', (req, res) => {
+router.post('/sign-up', (req, res) => {
     let params = req.body;
     service.register(params)
         .then((data) => res.status(201).send({
