@@ -11,8 +11,17 @@ const service = new usersService();
 // Register a new user
 router.post('/register', (req, res) => {
     let params = req.body;
-    service.register(params).then((data) => res.status(201).send(data)).
-        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+    service.register(params)
+        .then((data) => res.status(201).send({
+            success: true,
+            data: data,
+            message: "Đăng ký tài khoản thành công"
+        }))
+        .catch(err => res.status(400).send({ 
+            success: false, 
+            data: [], 
+            message: err.message 
+        }));
 });
 
 // Create user for admin

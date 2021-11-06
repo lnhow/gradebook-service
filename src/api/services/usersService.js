@@ -120,12 +120,8 @@ class usersService {
         if (new_user_err) throw (new_user_err);
 
         return {
-            success: true,
-            data: {
-                id: new_user.insertId,
-                ..._params_new_users
-            },
-            message: "Đăng ký tài khoản thành công"
+            id: new_user.insertId,
+            ..._params_new_users
         }
     }
 
