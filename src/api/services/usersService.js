@@ -71,8 +71,9 @@ class usersService {
     }
 
 
-    async register(params) {
-
+    async register(params, isOAuth = false) {
+        console.log(params);
+        console.log('OAUTH: ' + isOAuth);
 
         //validate username
         if (this.isEmpty(params.username)) {
@@ -86,27 +87,30 @@ class usersService {
             throw new Error("Đã tồn tại username");
         }
 
-        //validate password
-        if (this.isEmpty(params.password)) {
-            throw new Error("Vui lòng truyền password");
-        }
-
-        //validate fullname
-        if (this.isEmpty(params.password)) {
+        // Validate fullname
+        if (this.isEmpty(params.full_name)) {
             throw new Error("Họ và tên là bắt buộc");
         }
 
-        if (
-            !params.password.match(
-                /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
-            )
-        ) {
-            throw new Error(
-                "Mật khẩu tối thiểu 8 ký tự, ít nhất một ký tự viết hoa, một ký tự viết thường, một số và một ký tự đặc biệt"
-            );
+        // OAuth does is secure, without password, ignore
+        if (!isOAuth) {
+            // Validate password
+            if (this.isEmpty(params.password)) {
+                throw new Error("Vui lòng truyền password");
+            }
+
+            if (
+                !params.password.match(
+                    /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
+                )
+            ) {
+                throw new Error(
+                    "Mật khẩu tối thiểu 8 ký tự, ít nhất một ký tự viết hoa, một ký tự viết thường, một số và một ký tự đặc biệt"
+                );
+            }
         }
 
-        const { salt, passwordHash } = helper.saltHashPassword(params.password);
+        const { salt, passwordHash } = helper.saltHashPassword(params.password || '');
 
         let _params_new_users = {
             username: params.username,
@@ -114,6 +118,7 @@ class usersService {
             password: passwordHash,
             full_name: params.full_name || params.username,
             user_type: "S",
+            avatar: params.avatar || ''
         }
 
         let [new_user, new_user_err] = await this.handle(this.repo.create(_params_new_users));

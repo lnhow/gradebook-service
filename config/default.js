@@ -21,6 +21,10 @@ module.exports = {
         password: DefaultConfig.getSmtpMailPassword(),
     },
 
+    oAuthClientID: {
+        google:  DefaultConfig.getGoogleOauthClientID(),
+    },
+
     mysqldb: {
         host: 'b04wqnwkn9xxov6ohypk-mysql.services.clever-cloud.com',
         port: '3306',
