@@ -72,9 +72,6 @@ class usersService {
 
 
     async register(params, isOAuth = false) {
-        console.log(params);
-        console.log('OAUTH: ' + isOAuth);
-
         //validate username
         if (this.isEmpty(params.username)) {
             throw new Error("Vui lòng truyền username");

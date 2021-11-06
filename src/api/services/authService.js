@@ -107,25 +107,27 @@ class AuthService {
 
         if (this.isEmpty(user)) {
             // Account does not exist -> register new user
-            [user, user_err] = await this.handle(
-                userServiceObj.register({
-                    username: email,
-                    full_name: name,
-                    avatar: picture,
-                    password: ''    //Require no password
-                }, true)
-            );
-            console.log(user);
-            if (user_err) {
-                throw(user_err);
+            const newUser = {
+                username: email,
+                full_name: name,
+                avatar: picture,
+                password: ''    //Require no password
             };
+
+            [user, user_err] = await this.handle(
+                userServiceObj.register(newUser, true)
+            );
+            if (user_err) throw(user_err);
+
+            // Re-fetch newly created user
+            [user, user_err] = await this.handle(this.user_repo.showByCol('username', email));
+            if (user_err) throw(user_err);
         }
 
-        // Keep getting error because of this
         // Check active user
-        // if (user.status !== 'A') {
-        //     throw new Error('Tải khoản chưa được kích hoạt');
-        // }
+        if (user.status !== 'A') {
+            throw new Error('Tải khoản chưa được kích hoạt');
+        }
 
         // Update last login
         let [up_last_login, up_last_login_err] = await this.handle(this.user_repo.update(user.id, { last_login_at: new Date() }));
