@@ -2,6 +2,7 @@
  * Copyright (c) Nhat Tin Logistics 2019. All Rights Reserved.
  * @author khoa.nt
  */
+const DefaultConfig = require('./utils/defaultConfigGetter');
 
 module.exports = {
 
@@ -12,6 +13,12 @@ module.exports = {
         lang_code: 'vi',
         env: 'local',
         secret_key: 'a3e75cdd13bdff759417988f501978ae',
+    },
+
+    smtp_mail: {
+        service: 'Gmail',
+        username: DefaultConfig.getSmtpMailUsername(),
+        password: DefaultConfig.getSmtpMailPassword(),
     },
 
     mysqldb: {
