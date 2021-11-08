@@ -38,7 +38,6 @@ class classroomService {
         ]);
         this.col.filters(params);
         this.col.addSort('t.created_at', 'DESC');
-
         let count = this.col.finallizeTotalCount();
         let sql = this.col.finallize(is_limit);
 
@@ -122,6 +121,36 @@ class classroomService {
             },
             message: "Cập nhật thành công"
         }
+    }
+    async show(id,params)
+    {
+        let is_limit = false
+        this.col.addSelect([
+            "t.*",
+            "t2.full_name as owner_name",
+            "t2.avatar as owner_avatar"
+        ]);
+        this.col.join('tbl_users t2',"t.owner_id","t2.id","");
+        this.col.filters(params);
+        this.col.where('t.id','',id)
+        let count = this.col.finallizeTotalCount();
+        let sql = this.col.finallize(is_limit);
+        let [data, error] = await this.handle(this.repo.list(sql));
+        if (error) throw (error);
+        let [total, err] = await this.handle(this.repo.listCount(count));
+        if (err) throw (err);
+        if (total.total>0)
+            return {
+                success: true,
+                data,
+                message: "Lấy lớp thành công"
+            }
+        else
+            return{
+                success: false,
+                data,
+                message: "Bạn chưa join lớp này"
+            };
     }
 
     isEmpty(value) {
