@@ -122,7 +122,7 @@ class classroomService {
             message: "Cập nhật thành công"
         }
     }
-    async show(id,params)
+    async details(id,params)
     {
         let is_limit = false
         this.col.addSelect([
@@ -136,21 +136,29 @@ class classroomService {
         let count = this.col.finallizeTotalCount();
         let sql = this.col.finallize(is_limit);
         let [data, error] = await this.handle(this.repo.list(sql));
+        let [classdata]= data 
         if (error) throw (error);
         let [total, err] = await this.handle(this.repo.listCount(count));
         if (err) throw (err);
-        if (total.total>0)
+        if (!data.length)
             return {
-                success: true,
-                data,
-                message: "Lấy lớp thành công"
-            }
-        else
-            return{
                 success: false,
                 data,
                 message: "Bạn chưa join lớp này"
-            };
+            }
+        else
+            {
+                let [listUser, listUser_err] = await this.handle(this.repo_user_class.listStudentByClassId(id));
+                if (listUser_err) throw (listUser_err);
+                return{
+                    success: true,
+                    data:{
+                        ...classdata,
+                        listUser
+                    },
+                    message: "Lấy lớp thành công"
+                };
+            }
     }
 
     isEmpty(value) {

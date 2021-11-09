@@ -21,18 +21,8 @@ class BaseRepository {
   listCount(sql) {
     return new Promise((resolve, reject) => {
       this.db.connection.query(sql, (err, rows) => {
-        if (err)
-          reject(err);
-        else {
-          if (rows.length == 0) {
-            resolve(null);
-          }
-
-          var string = JSON.stringify(rows);
-          var json = JSON.parse(string);
-
-          resolve(json[0]);
-        }
+        if (err) reject(err);
+        else resolve(rows);
       })
     });
   }

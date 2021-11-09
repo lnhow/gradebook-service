@@ -35,7 +35,7 @@ router.get('/:id', auth, (req, res) => {
     let id = req.params.id;
     let params = req.body;
     params.user_info = req.user;
-    service.show(id, params).then((data) => res.status(200).send(data)).
+    service.details(id, params).then((data) => res.status(200).send(data)).
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
 });
 
