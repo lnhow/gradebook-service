@@ -8,6 +8,8 @@ const usersRepository = require('../repositories/usersRepository');
 const sessionRepository = require('../repositories/sessionRepository');
 const { auth_token_length } = require("../../utils/constant");
 
+const { genPasswrd } = require('../../utils/helper');
+
 // Sign in with google
 const GOOGLE_OAUTH_CLIENT_ID = require('../../../config/default').oAuthClientID.google;
 const { OAuth2Client } = require('google-auth-library');
@@ -107,11 +109,12 @@ class AuthService {
 
         if (this.isEmpty(user)) {
             // Account does not exist -> register new user
+            const password = genPasswrd();  //Require no password, gennerate 1
             const newUser = {
                 username: email,
                 full_name: name,
                 avatar: picture,
-                password: ''    //Require no password
+                password,
             };
 
             [user, user_err] = await this.handle(

@@ -32,14 +32,6 @@ function generateResetPasswordToken(userId) {
   return ciphered;
 }
 
-function genPasswrd() {
-  var password = generator.generate({
-    length: 10,
-    numbers: true
-  });
-  return password;
-}
-
 function decipherResetPasswordToken(ciphered) {
   const decipher = crypto.createDecipher(algorithm, secret);
   let deciphered = decipher.update(ciphered, outputEncoding, inputEncoding);
