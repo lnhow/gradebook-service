@@ -133,6 +133,7 @@ class classroomService {
         this.col.join('tbl_users t2',"t.owner_id","t2.id","");
         this.col.filters(params);
         this.col.where('t.id','',id)
+        this.col.where('t.status','','A')
         let count = this.col.finallizeTotalCount();
         let sql = this.col.finallize(is_limit);
         let [data, error] = await this.handle(this.repo.list(sql));
@@ -144,7 +145,7 @@ class classroomService {
             return {
                 success: false,
                 data,
-                message: "Bạn chưa join lớp này"
+                message: "Bạn chưa join lớp này hoặc lớp học unactived"
             }
         else
             {
