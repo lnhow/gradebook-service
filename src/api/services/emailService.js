@@ -1,8 +1,3 @@
-/*
- * Copyright (c) Nhat Tin Logistics 2019. All Rights Reserved.
- * @author khoa.nt@nogistics.vn
- */
-
 const nodemailer = require("nodemailer");
 var hbs = require("nodemailer-express-handlebars");
 const config = require("config");
@@ -78,6 +73,7 @@ class usersService {
         }
         let email_info = this.getMailInfomation(params);
 
+        console.log(email_info);
         let [response, err] = await this.handle(this.transport.sendMail(email_info));
         if (err) {
             throw (err)

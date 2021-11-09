@@ -64,7 +64,6 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(logErrors);
 app.use(clientErrorHandler);
-app.use(fileUpload());
 
 // Routes
 /* Split BackEnd & FrontEnd */

@@ -1,8 +1,3 @@
-/*
- * Copyright (c) Nhat Tin Logistics 2019. All Rights Reserved.
- * @author khoa.nt
- */
-
 const helper = require('../../utils/helper');
 const usersRepository = require('../repositories/usersRepository');
 const sessionRepository = require('../repositories/sessionRepository');

@@ -17,8 +17,12 @@ module.exports = function (app, version) {
     //classrooms
     const clsrmCtrl = require('./api/controllers/classroomController');
     app.use(`${version}/classrooms`, clsrmCtrl);
-    
+
     //email
     const emailCtrl = require('./api/controllers/emailController');
     app.use(`${version}/send-email`, emailCtrl);
+
+    //uploads
+    const uploadCtrl = require('./api/controllers/uploadController');
+    app.use(`${version}/upload`, uploadCtrl);
 }
