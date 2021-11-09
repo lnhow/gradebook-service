@@ -71,6 +71,63 @@ class usersService {
     }
 
 
+    async register(params, isOAuth = false) {
+        //validate username
+        if (this.isEmpty(params.username)) {
+            throw new Error("Vui lòng truyền username");
+        }
+
+        let [chk_username, chk_username_err] = await this.handle(this.repo.showByCol("username", params.username));
+        if (chk_username_err) throw (chk_username_err);
+
+        if (!this.isEmpty(chk_username)) {
+            throw new Error("Đã tồn tại username");
+        }
+
+        // Validate fullname
+        if (this.isEmpty(params.full_name)) {
+            throw new Error("Họ và tên là bắt buộc");
+        }
+
+        // OAuth does is secure, without password, ignore
+        if (!isOAuth) {
+            // Validate password
+            if (this.isEmpty(params.password)) {
+                throw new Error("Vui lòng truyền password");
+            }
+
+            if (
+                !params.password.match(
+                    /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
+                )
+            ) {
+                throw new Error(
+                    "Mật khẩu tối thiểu 8 ký tự, ít nhất một ký tự viết hoa, một ký tự viết thường, một số và một ký tự đặc biệt"
+                );
+            }
+        }
+
+        const { salt, passwordHash } = helper.saltHashPassword(params.password || '');
+
+        let _params_new_users = {
+            username: params.username,
+            salt: salt,
+            password: passwordHash,
+            full_name: params.full_name || params.username,
+            user_type: "S",
+            avatar: params.avatar || ''
+        }
+
+        let [new_user, new_user_err] = await this.handle(this.repo.create(_params_new_users));
+        if (new_user_err) throw (new_user_err);
+
+        return {
+            id: new_user.insertId,
+            ..._params_new_users
+        }
+    }
+
+
     isEmpty(value) {
         return [null, undefined, ""].includes(value);
     }

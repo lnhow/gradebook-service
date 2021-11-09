@@ -1,5 +1,6 @@
 
 const crypto = require('crypto');
+const generator = require('generate-password');
 
 const indexOfPropValue = (array, prop, value) => {
   for (let i = 0; i < array.length; ++i) {
@@ -74,6 +75,14 @@ function desaltHashPassword(password, salt) {
   return hash.digest('hex');
 }
 
+function genPasswrd() {
+  var password = generator.generate({
+    length: 10,
+    numbers: true
+  });
+  return password;
+}
+
 module.exports = {
   removeUnicode,
   sha512,
@@ -81,5 +90,6 @@ module.exports = {
   formatNumber,
   saltHashPassword,
   desaltHashPassword,
-  genRandomString
+  genRandomString,
+  genPasswrd
 };

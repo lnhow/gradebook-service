@@ -15,6 +15,21 @@ router.post('/sign-in', (req, res) => {
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
 });
 
+//Google sign in
+router.post('/google', (req, res) => {
+    let params = req.body;
+    service.handleGoogleSignIn(params)
+    .then((data) => res.status(200).send({
+        success: true,
+        data: data,
+        message: 'Đăng nhập thành công'}))
+    .catch(err => res.status(400).send({ 
+        success: false, 
+        data: [], 
+        message: err.message 
+    }));
+});
+
 //Sign out
 router.post('/sign-out', auth, (req, res) => {
     let params = req.user;
