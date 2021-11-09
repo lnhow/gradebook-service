@@ -7,9 +7,9 @@ class uploadService {
 
     async uploadImage(file_name) {
 
-        const filePath = './uploads/images/' + file_name;
+        const filePath = './uploads/' + file_name;
 
-        let [res, err] = await this.handle(cloudinary.uploader.upload(filePath, { public_id: file_name , folder: 'users/avatar', unique_filename: false, overwrite: true }));
+        let [res, err] = await this.handle(cloudinary.uploader.upload(filePath, { public_id: file_name , folder: 'images', unique_filename: false, overwrite: true }));
         if (err) throw (err);
         fs.unlinkSync(filePath);
         return {
