@@ -71,7 +71,8 @@ class classroomService {
         ////CREATE USER-CLASS////
         let _params_user_class = {
             user_id: params.user_info.id,
-            class_id: new_class.insertId
+            class_id: new_class.insertId,
+            role: 'T',  //The class creator is a teacher by default
         }
 
         let [new_user_class, new_user_class_err] = await this.handle(this.repo_user_class.create(_params_user_class));
