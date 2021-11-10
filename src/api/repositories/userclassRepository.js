@@ -16,6 +16,28 @@ class userclassRepository extends BaseRepository {
             });
         })
     }
+
+    getActiveUserClassInfo(user_id, class_id) {
+        let sql=
+            `SELECT t.user_id, t.class_id, t.role
+            FROM tbl_user_classroom t
+            WHERE t.class_id=${class_id} 
+                AND t.user_id=${user_id} 
+                AND t.status='A'
+            LIMIT 1
+            `;
+
+        return new Promise((resolve, reject) => {
+            this.db.connection.query(sql, (err, rows) => {
+                if (err) reject(err);
+                else if (rows.length === 1) {
+                    resolve(rows[0]);
+                } else {
+                    resolve(null);
+                }
+            });
+        });
+    }
 }
 
 module.exports = userclassRepository;
