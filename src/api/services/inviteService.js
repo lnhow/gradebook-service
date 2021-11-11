@@ -49,10 +49,12 @@ class inviteService {
 
     return {
       success: true,
-      data: active_invites.map((invite) => ({
-        ...invite,
-        link: genInvitationLink(invite),
-      })),
+      data: {
+        invites: active_invites.map((invite) => ({
+          ...invite,
+          link: genInvitationLink(invite),
+        }))
+      },
       message: 'Lấy lời mời thành công'
     }
   }
