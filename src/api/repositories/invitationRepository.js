@@ -19,7 +19,8 @@ class invitationRepository extends BaseRepository {
             FROM ${this.table} t 
             WHERE t.class_id=${class_id} AND t.role='${role}'
             AND t.status='A' AND t.expire_at > CURRENT_TIMESTAMP
-            ORDER BY t.expire_at DESC`;
+            ORDER BY t.expire_at DESC
+            LIMIT 1`; // Limit only 1 active link per role per classroom
     
         return new Promise((resolve, reject) => {
             this.db.connection.query(sql, (err, rows) => {
