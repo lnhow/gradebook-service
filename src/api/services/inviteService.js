@@ -47,7 +47,7 @@ class inviteService {
       throw (err_user_class_info);
     }
 
-    let token = (params.role === 'S') ? class_info.class_code : await this.genTokenInvite(param.class_id, class_info.class_code);
+    let token = (params.role === 'S') ? class_info.class_code : await this.genTokenInvite(params.class_id, class_info.class_code);
     //Create token if role is teacher
     if (params.role === 'T') {
       //Create token
