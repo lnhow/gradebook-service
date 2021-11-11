@@ -7,9 +7,13 @@ class classroomCollection extends BaseCollection {
     }
 
     filters(params) {
+        if (!this.isEmpty(params.status)) {
+            this.where('t.status', '=', params.status);
+        }
+    }
 
-        let sql = `(SELECT class_id FROM tbl_user_classroom WHERE user_id=${params.user_info.id}) `
-        this.where('t.id', 'IN', sql);
+    isEmpty(value) {
+        return [null, undefined, ""].includes(value);
     }
 }
 
