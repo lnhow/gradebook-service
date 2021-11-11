@@ -49,7 +49,7 @@ class usersService {
             salt: salt,
             password: passwordHash,
             full_name: params.full_name || params.username,
-            user_type: params.user_type || "S",
+            user_type: params.user_type || "C",
         }
 
         let [new_user, new_user_err] = await this.handle(this.repo.create(_params_new_users));
