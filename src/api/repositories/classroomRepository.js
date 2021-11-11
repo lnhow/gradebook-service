@@ -8,12 +8,31 @@ class classroomRepository extends BaseRepository {
     }
 
     showActive(id) {
-        const sql = 
+        const sql =
             `SELECT t.* 
             FROM ${this.table} t 
             WHERE t.id=${id} AND t.status='A' 
             LIMIT 1`;
-    
+
+        return new Promise((resolve, reject) => {
+            this.db.connection.query(sql, (err, rows) => {
+                if (err) reject(err);
+                else if (rows.length === 1) {
+                    resolve(rows[0]);
+                } else {
+                    resolve(null);
+                }
+            });
+        });
+    }
+
+    showByClassCodeAndId(class_code, id) {
+        const sql =
+            `SELECT t.* 
+            FROM ${this.table} t 
+            WHERE t.class_code='${class_code}' AND t.id =${id} AND t.status='A' 
+            LIMIT 1`;
+
         return new Promise((resolve, reject) => {
             this.db.connection.query(sql, (err, rows) => {
                 if (err) reject(err);

@@ -47,7 +47,7 @@ class inviteService {
       throw (err_user_class_info);
     }
 
-    let token = (params.role === 'S') ? class_info.class_code : this.genTokenInvite(class_info.class_code);
+    let token = (params.role === 'S') ? class_info.class_code : await this.genTokenInvite(param.class_id, class_info.class_code);
     //Create token if role is teacher
     if (params.role === 'T') {
       //Create token
@@ -68,13 +68,13 @@ class inviteService {
     let params_invite_email = {
       type: 1,
       email: params.email,
-      content : {
+      content: {
         invite_user: params.user_info.full_name,
-        invite_link: genInvitationLink(params.class_id,token)
+        invite_link: genInvitationLink(params.class_id, token)
       }
     }
     let [send_email, send_email_err] = await this.handle(this.email_service.sendEmail(params_invite_email));
-    if(send_email_err) throw(send_email_err);
+    if (send_email_err) throw (send_email_err);
 
     return {
       success: true,
@@ -153,13 +153,71 @@ class inviteService {
     };
   }
 
-  genTokenInvite(class_code) {
+  async join(params) {
+    if (this.isEmpty(params.token)) {
+      throw new Error('Vui lòng truyền invite token');
+    }
+
+    if (this.isEmpty(params.class_id)) {
+      throw new Error('Vui lòng truyền class_id');
+    }
+
+    let [class_info_by_user, class_info_by_user_err] = await this.handle(this.repo_user_class.showByKey(params.class_id, params.user_info.id));
+    if (class_info_by_user_err) throw (class_info_by_user_err);
+
+    if (!this.isEmpty(class_info_by_user)) {
+      return {
+        success: true,
+        data: [],
+        message: "Tham gia thành công"
+      }
+    }
+
+    //in case: token get from public link --> Role: S
+    let [class_info, class_info_err] = await this.handle(this.repo_classroom.showByClassCodeAndId(params.token, params.class_id));
+    if (class_info_err) throw class_info_err;
+
+    //in case: token get from private link --> Role: T
+    let [invitation, err_invitation] = await this.handle(this.repo.showByTokenAndClassId(params.token, params.class_id));
+    if (err_invitation) throw err_invitation;
+
+    if (this.isEmpty(class_info) && this.isEmpty(invitation)) {
+      throw new Error('Không tồn tại lớp để tham gia');
+    }
+
+    //Create user class record
+    let params_user_class = {
+      user_id: params.user_info.id,
+      class_id: params.class_id,
+      role: this.isEmpty(invitation) ? 'S' : 'T'
+    }
+
+    let [new_member, new_member_err] = await this.handle(this.repo_user_class.create(params_user_class));
+    if (new_member_err) throw (new_member_err);
+
+    //Delete invite token
+    let [del_ivtoken, del_ivtoken_err] = await this.handle(this.repo.deleteByCol("token", params.token));
+    if (del_ivtoken_err) throw (del_ivtoken_err);
+
+    return {
+      success: true,
+      data: [],
+      message: "Tham gia thành công"
+    }
+  }
+
+  async genTokenInvite(class_id, class_code) {
 
     let token = helper.genRandomString(invitation_token_length);
-    while (token === class_code) {
-      token = helper.genRandomString(invitation_token_length);
+    let [invitation, err_invitation] = await this.handle(this.repo.showByTokenAndClassId(token, class_id));
+    if (err_invitation) {
+      throw err_invitation;
     }
-    return token;
+
+    if (this.isEmpty(invitation) && token !== class_code) {
+      return token;
+    }
+    return this.genTokenInvite(class_code);
   }
 
   isEmpty(value) {

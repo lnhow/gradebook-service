@@ -32,6 +32,25 @@ class invitationRepository extends BaseRepository {
         });
     }
 
+    showByTokenAndClassId(token,class_id) {
+      const sql =
+          `SELECT t.* 
+          FROM ${this.table} t 
+          WHERE t.token='${token}' AND t.class_id =${class_id} AND t.status='A' 
+          LIMIT 1`;
+
+      return new Promise((resolve, reject) => {
+          this.db.connection.query(sql, (err, rows) => {
+              if (err) reject(err);
+              else if (rows.length === 1) {
+                  resolve(rows[0]);
+              } else {
+                  resolve(null);
+              }
+          });
+      });
+  }
+
     updateByToken(token, params) {
         const sql = `UPDATE ${this.table} SET ? WHERE token= ?`;
     

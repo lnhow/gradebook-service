@@ -66,6 +66,19 @@ class BaseRepository {
     });
   }
 
+  deleteByCol(col_name, col_value) {
+    const sql = `DELETE FROM ${this.table} t WHERE t.${col_name}='${col_value}'`;
+    return new Promise((resolve, reject) => {
+      this.db.connection.query(sql, {}, (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(rows);
+        }
+      });
+    });
+  }
+
   create(params) {
     const now_date = new Date();
     params.created_at = now_date;
