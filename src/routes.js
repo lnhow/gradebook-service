@@ -25,4 +25,8 @@ module.exports = function (app, version) {
     //uploads
     const uploadCtrl = require('./api/controllers/uploadController');
     app.use(`${version}/upload`, uploadCtrl);
+
+    //invite
+    const inviteCtrl = require('./api/controllers/inviteController');
+    app.use(`${version}/invite`, inviteCtrl);
 }

@@ -15,6 +15,10 @@ module.exports = {
         secret_key: 'a3e75cdd13bdff759417988f501978ae',
     },
 
+    client: {
+        host: DefaultConfig.getClientHost(),
+    },
+
     smtp_mail: {
         service: 'Gmail',
         username: DefaultConfig.getSmtpMailUsername(),
