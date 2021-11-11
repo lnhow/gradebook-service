@@ -1,8 +1,8 @@
-const moment = require('moment');
-
 const classroomRepository = require("../repositories/classroomRepository");
 const userclassRepository = require("../repositories/userclassRepository");
+const usersRepository = require("../repositories/usersRepository");
 const classroomCollection = require("../collections/classroomCollection");
+
 const helper = require("../../utils/helper");
 const { class_code_token_length } = require("../../utils/constant")
 
@@ -10,6 +10,8 @@ class classroomService {
     constructor() {
         this.repo = new classroomRepository();
         this.col = new classroomCollection();
+
+        this.repo_user = new usersRepository();
 
         this.repo_user_class = new userclassRepository();
     }
@@ -25,7 +27,7 @@ class classroomService {
             is_limit = false;
         }
 
-        this.col.join('tbl_users t2',"t.owner_id","t2.id","");
+        this.col.join('tbl_users t2', "t.owner_id", "t2.id", "");
         this.col.addSelect([
             "t.*",
             "t2.full_name as owner_name",
@@ -97,7 +99,7 @@ class classroomService {
             throw new Error("Không tìm thấy lớp học này");
         }
 
-        if(params.user_info.id !== details.owner_id){
+        if (params.user_info.id !== details.owner_id) {
             throw new Error("Không có quyền chỉnh sửa lớp này");
         }
         let _params_update = {
@@ -107,55 +109,52 @@ class classroomService {
             status: params.status || details.status
         }
 
-        let [up_class,up_class_err] = await this.handle(this.repo.update(id,_params_update));
-        if(up_class_err) throw(up_class_err);
-        
+        let [up_class, up_class_err] = await this.handle(this.repo.update(id, _params_update));
+        if (up_class_err) throw (up_class_err);
+
         return {
             success: true,
-            data : {
+            data: {
                 ..._params_update
             },
             message: "Cập nhật thành công"
         }
     }
-    async details(id,params)
-    {
-        let is_limit = false
-        this.col.addSelect([
-            "t.*",
-            "t2.full_name as owner_name",
-            "t2.avatar as owner_avatar"
-        ]);
-        this.col.join('tbl_users t2',"t.owner_id","t2.id","");
-        this.col.filters(params);
-        this.col.where('t.id','',id)
-        this.col.where('t.status','','A')
-        let count = this.col.finallizeTotalCount();
-        let sql = this.col.finallize(is_limit);
-        let [data, error] = await this.handle(this.repo.list(sql));
-        let [classdata]= data 
-        if (error) throw (error);
-        let [total, err] = await this.handle(this.repo.listCount(count));
+    async details(id, params) {
+
+        let [details, err] = await this.handle(this.repo.show(id));
         if (err) throw (err);
-        if (!data.length)
-            return {
-                success: false,
-                data,
-                message: "Bạn chưa join lớp này hoặc lớp học unactived"
-            }
-        else
-            {
-                let [listUser, listUser_err] = await this.handle(this.repo_user_class.listStudentByClassId(id));
-                if (listUser_err) throw (listUser_err);
-                return{
-                    success: true,
-                    data:{
-                        ...classdata,
-                        listUser
-                    },
-                    message: "Lấy lớp thành công"
-                };
-            }
+        if (this.isEmpty(details) || details.status === 'D') {
+            throw new Error("Không tìm thấy lớp học này");
+        }
+
+        let [user_class, user_class_err] = await this.handle(this.repo_user_class.showByKey(id, params.user_info.id));
+        if (user_class_err) throw (user_class_err);
+        if (this.isEmpty(user_class)) {
+            throw new Error("Bạn chưa tham gia lớp học này");
+        }
+        if (user_class.role === 'S') delete details.class_code;
+
+        let [owner_info, owner_info_err] = await this.handle(this.repo_user.show(details.owner_id));
+        if (owner_info_err) throw (owner_info_err);
+
+        if (this.isEmpty(owner_info)) {
+            throw new Error("Không tìm thấy thông tin của giáo viên lớp học này");
+        }
+
+        let [listUser, listUser_err] = await this.handle(this.repo_user_class.listStudentByClassId(id));
+        if (listUser_err) throw (listUser_err);
+
+        return {
+            success: true,
+            data: {
+                ...details,
+                owner_name: owner_info.full_name,
+                owner_avatar: owner_info.avatar,
+                listUser
+            },
+            message: "Lấy lớp thành công"
+        };
     }
 
     isEmpty(value) {
