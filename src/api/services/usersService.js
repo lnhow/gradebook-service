@@ -122,6 +122,94 @@ class usersService {
         }
     }
 
+    async details(params) {
+
+        let [details, err] = await this.handle(this.repo.show(params.user_info.id));
+        if (err) throw (err);
+        if (this.isEmpty(details) || details.status === 'D') {
+            throw new Error("Không tìm thấy user này");
+        }
+        let {full_name,user_code,date_of_birth,phone,sex,avatar} = details
+        return {
+            success: true,
+            data: {
+                full_name,
+                user_code,
+                date_of_birth,
+                phone,
+                sex,
+                avatar
+            },
+            message: "Lấy người dùng thành công"
+        };
+    }
+    async update(params)
+    {
+        let [details, err] = await this.handle(this.repo.show(params.user_info.id));
+        if (err) throw (err);
+        if (this.isEmpty(details) || details.status === 'D') {
+            throw new Error("Không tìm thấy user này");
+        }
+        let {full_name,user_code,date_of_birth,phone,sex,avatar} = details
+
+        let _params_update = {
+            full_name: params.full_name || details.full_name,
+            user_code: params.user_code || details.user_code,
+            date_of_birth: params.date_of_birth || details.date_of_birth,
+            phone: params.phone || details.phone,
+            sex: params.sex || details.sex,
+            avatar: params.avatar || details.avatar
+        }
+
+        let [up_user, up_user_err] = await this.handle(this.repo.update(params.user_info.id, _params_update));
+        if (up_user_err) throw (up_user_err);
+        
+        return {
+            success: true,
+            data: {
+                ..._params_update
+            },
+            message: "Cập nhật thành công"
+        }
+    }
+    
+    async changePassword(params)
+    {
+        if (this.isEmpty(params.oldpassword)) {
+            throw new Error("Vui lòng truyền oldpassword");
+        }
+        if (this.isEmpty(params.newpassword)) {
+            throw new Error("Vui lòng truyền newpassword");
+        }
+
+        let [user, err] = await this.handle(this.repo.show(params.user_info.id));
+        if (err) throw (err);
+        if (this.isEmpty(user) || user.status === 'D') {
+            throw new Error("Không tìm thấy user này");
+        }
+
+        let dePasswordHash = helper.desaltHashPassword(params.oldpassword,user.salt);
+        if (dePasswordHash !== user.password)
+        {
+            throw new Error('Mật khẩu không đúng');
+        }
+
+        const { salt, passwordHash } = helper.saltHashPassword(params.newpassword);
+        let _params_update = {
+            password: passwordHash,
+            salt: salt
+        }
+        let [up_user_password, up_user_password_err] = await this.handle(this.repo.update(params.user_info.id,_params_update));
+        if (up_user_password_err) throw (up_user_password_err);
+
+        return {
+            success: true,
+            data: {
+                ..._params_update
+            },
+            message: "Đổi mật khẩu thành công"
+        }
+    }
 
     isEmpty(value) {
         return [null, undefined, ""].includes(value);
