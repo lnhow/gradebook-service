@@ -31,6 +31,13 @@ router.put('/:id', auth, (req, res) => {
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
 });
 
+router.get('/by-invite', auth, (req, res) => {
+    let params = req.query;
+    params.user_info = req.user;
+    service.detailsByInvite(params).then((data) => res.status(200).send(data)).
+        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+});
+
 router.get('/:id', auth, (req, res) => {
     let id = req.params.id;
     let params = req.body;

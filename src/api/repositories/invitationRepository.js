@@ -36,7 +36,7 @@ class invitationRepository extends BaseRepository {
       const sql =
           `SELECT t.* 
           FROM ${this.table} t 
-          WHERE t.token='${token}' AND t.class_id =${class_id} AND t.status='A' 
+          WHERE t.token='${token}' AND t.class_id =${class_id} AND t.status='A' AND t.expire_at > CURRENT_TIMESTAMP
           LIMIT 1`;
 
       return new Promise((resolve, reject) => {

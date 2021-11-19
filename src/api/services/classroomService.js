@@ -2,6 +2,7 @@ const classroomRepository = require("../repositories/classroomRepository");
 const userclassRepository = require("../repositories/userclassRepository");
 const usersRepository = require("../repositories/usersRepository");
 const classroomCollection = require("../collections/classroomCollection");
+const invitationRepository = require('../repositories/invitationRepository');
 
 const helper = require("../../utils/helper");
 const { class_code_token_length } = require("../../utils/constant")
@@ -14,6 +15,8 @@ class classroomService {
         this.repo_user = new usersRepository();
 
         this.repo_user_class = new userclassRepository();
+
+        this.repo_invite = new invitationRepository();
     }
 
     async list(params) {
@@ -152,6 +155,74 @@ class classroomService {
                 owner_name: owner_info.full_name,
                 owner_avatar: owner_info.avatar,
                 listUser
+            },
+            message: "Lấy lớp thành công"
+        };
+    }
+
+    async detailsByInvite(params) {
+
+        if (this.isEmpty(params.token)) {
+            throw new Error("Vui lòng truyền token");
+        }
+
+        if (this.isEmpty(params.class_id)) {
+            throw new Error("Vui lòng truyền class_id");
+        }
+
+        let [details, err] = await this.handle(this.repo.show(params.class_id));
+        if (err) throw (err);
+
+        if (this.isEmpty(details)) {
+            return {
+                success: false,
+                data: [],
+                message: "Không tồn tại lớp để tham gia"
+            }
+        }
+
+        let [class_info_by_user, class_info_by_user_err] = await this.handle(this.repo_user_class.showByKey(params.class_id, params.user_info.id));
+        if (class_info_by_user_err) throw (class_info_by_user_err);
+    
+        if (!this.isEmpty(class_info_by_user)) {
+          return {
+            success: true,
+            data: [],
+            message: "Bạn đã tham gia lớp này"
+          }
+        }
+
+        //in case: token get from public link --> Role: S
+        let [class_info, class_info_err] = await this.handle(this.repo.showByClassCodeAndId(params.token, params.class_id));
+        if (class_info_err) throw class_info_err;
+
+        //in case: token get from private link --> Role: T
+        let [invitation, err_invitation] = await this.handle(this.repo_invite.showByTokenAndClassId(params.token, params.class_id));
+        if (err_invitation) throw err_invitation;
+
+        //none
+        let role = 'N';
+
+        role = this.isEmpty(class_info) ? 'T' : 'S';
+
+        if(role==='N'){
+            return {
+                success: false,
+                data: [],
+                message: "Không tồn tại lớp để tham gia"
+            }
+        }
+
+        let [owner_info, owner_info_err] = await this.handle(this.repo_user.show(details.owner_id));
+        if (owner_info_err) throw (owner_info_err);
+
+        return {
+            success: true,
+            data: {
+                ...details,
+                owner_name: owner_info.full_name,
+                owner_avatar: owner_info.avatar,
+                role
             },
             message: "Lấy lớp thành công"
         };
