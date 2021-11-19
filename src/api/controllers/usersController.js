@@ -3,7 +3,7 @@
  * Copyright (c) Phó Trí Dũng 2021. All Rights Reserved.
  */
 const express = require('express');
-const { private } = require('../../utils/aclService');
+const { private, auth } = require('../../utils/aclService');
 const router = express.Router();
 const usersService = require('../services/usersService');
 const service = new usersService();
@@ -28,6 +28,30 @@ router.post('/sign-up', (req, res) => {
 router.post('/', private, (req, res) => {
     let params = req.body;
     service.create(params).then((data) => res.status(200).send(data)).
+        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+});
+
+//Get user
+router.get('/owner', auth, (req, res) => {
+    let params = req.body;
+    params.user_info = req.user;
+    service.details(params).then((data) => res.status(200).send(data)).
+        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+});
+
+//Update user
+router.put('/update', auth, (req, res) => {
+    let params = req.body;
+    params.user_info = req.user;
+    service.update(params).then((data) => res.status(200).send(data)).
+        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+});
+
+//Change password
+router.post('/change-password', auth, (req, res) => {
+    let params = req.body;
+    params.user_info = req.user;
+    service.changePassword(params).then((data) => res.status(200).send(data)).
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
 });
 
