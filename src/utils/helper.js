@@ -83,6 +83,30 @@ function genPasswrd() {
   return password;
 }
 
+function compareArrays(a1, a2) {
+  if (!a1 || !a2) {
+    return false
+  }
+
+  if (a1.length !== a2.length) {
+    return false
+  }
+
+  let check = true;
+  a1.map(item => {
+    if (!a2.includes(item)) {
+      check = false
+    }
+  });
+
+  a2.map(item => {
+    if (!a1.includes(item)) {
+      check = false
+    }
+  });
+  return check;
+}
+
 module.exports = {
   removeUnicode,
   sha512,
@@ -91,5 +115,6 @@ module.exports = {
   saltHashPassword,
   desaltHashPassword,
   genRandomString,
-  genPasswrd
+  genPasswrd,
+  compareArrays
 };
