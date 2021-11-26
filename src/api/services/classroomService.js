@@ -5,7 +5,8 @@ const classroomCollection = require("../collections/classroomCollection");
 const invitationRepository = require('../repositories/invitationRepository');
 
 const helper = require("../../utils/helper");
-const { class_code_token_length } = require("../../utils/constant")
+const { class_code_token_length } = require("../../utils/constant");
+const assignmentRepository = require("../repositories/assignmentRepository");
 
 class classroomService {
     constructor() {
@@ -17,6 +18,8 @@ class classroomService {
         this.repo_user_class = new userclassRepository();
 
         this.repo_invite = new invitationRepository();
+
+        this.repo_assginment = new assignmentRepository();
     }
 
     async list(params) {
@@ -46,6 +49,7 @@ class classroomService {
 
         let [total, err] = await this.handle(this.repo.listCount(count));
         if (err) throw (err);
+        
 
         return {
             success: true,
@@ -148,13 +152,17 @@ class classroomService {
         let [listUser, listUser_err] = await this.handle(this.repo_user_class.listByClassId(id));
         if (listUser_err) throw (listUser_err);
 
+        let [listAssginment, listAssginment_err] = await this.handle(this.repo_assginment.listByClass(id));
+        if (listAssginment_err) throw (listAssginment_err);
+
         return {
             success: true,
             data: {
                 ...details,
                 owner_name: owner_info.full_name,
                 owner_avatar: owner_info.avatar,
-                listUser
+                listUser,
+                listAssginment
             },
             message: "Lấy lớp thành công"
         };
