@@ -32,7 +32,7 @@ async function auth(req, res, next) {
   } else {
     return res.status(403).send({
       success: false,
-      message: 'Bạn không có quyền truy cập ứng dụng này',
+      message: 'Bạn không có quyền truy cập ứng dụng này. Nếu đã đăng nhập, vui lòng đăng nhập lại',
       data: [],
     });
   }
