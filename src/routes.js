@@ -29,4 +29,8 @@ module.exports = function (app, version) {
     //invite
     const inviteCtrl = require('./api/controllers/inviteController');
     app.use(`${version}/invite`, inviteCtrl);
+
+    //assignment
+    const assignmentCtrl = require('./api/controllers/assignmentController');
+    app.use(`${version}/assignment`, assignmentCtrl);
 }
