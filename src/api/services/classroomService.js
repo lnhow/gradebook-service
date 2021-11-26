@@ -162,7 +162,7 @@ class classroomService {
                 owner_name: owner_info.full_name,
                 owner_avatar: owner_info.avatar,
                 listUser,
-                listAssginment
+                listAssignment
             },
             message: "Lấy lớp thành công"
         };
