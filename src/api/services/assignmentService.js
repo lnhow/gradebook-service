@@ -126,6 +126,43 @@ class assignmentService {
         }
     }
 
+    //update
+    async update(id, params) {
+        let [details, details_err] = await this.handle(this.repo.show(id));
+        if (details_err) throw (details_err);
+        if (this.isEmpty(details)) {
+            throw new Error("Không tìm assignment này");
+        }
+
+        //verify request user is teacher of this class
+        let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(details.class_id));
+        if (list_users_class_err) throw (list_users_class_err);
+
+        if (!this.verifyTeacher(list_users_class, params.user_info.id)) {
+            return {
+                success: false,
+                data: [],
+                message: "Bạn không phải giáo viên của lớp nên không có quyền tạo!"
+            }
+        }
+
+        let _params_update = {
+            title: params.title  || details.title,
+            weight: params.weight || details.weight,
+            status: params.status || details.status
+        }
+        let [up_assign, up_assign_err] = await this.handle(this.repo.update(id, _params_update));
+        if (up_assign_err) throw (up_assign_err);
+
+        return {
+            success: true,
+            data: {
+                ..._params_update
+            },
+            message: "Cập nhật thành công"
+        }
+    }
+
     verifyTeacher(list_users_class, user_id) {
         let check = false;
         list_users_class.map(item => {

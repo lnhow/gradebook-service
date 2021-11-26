@@ -191,7 +191,7 @@ class usersService {
         let dePasswordHash = helper.desaltHashPassword(params.oldpassword,user.salt);
         if (dePasswordHash !== user.password)
         {
-            throw new Error('Mật khẩu không đúng');
+            throw new Error('Mật khẩu cũ không đúng');
         }
 
         const { salt, passwordHash } = helper.saltHashPassword(params.newpassword);

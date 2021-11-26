@@ -24,4 +24,25 @@ router.put('/arrange', auth, (req, res) => {
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
 });
 
+
+//Update assignment
+router.put('/:id', auth, (req, res) => {
+    let id = req.params.id;
+    let params = req.body;
+    params.user_info = req.user;
+    service.update(id, params).then((data) => res.status(200).send(data)).
+        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+});
+
+//Delete assignment
+router.delete('/:id', auth, (req, res) => {
+    let id = req.params.id;
+    let params = req.body;
+    params.user_info = req.user;
+    params.status = 'D';
+    service.update(id, params).then((data) => res.status(200).send(data)).
+        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+});
+
+
 module.exports = router;
