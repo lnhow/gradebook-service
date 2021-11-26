@@ -6,8 +6,8 @@ class userclassRepository extends BaseRepository {
     constructor() {
         super(table);
     }
-    listStudentByClassId(class_id) {
-        let sql = `SELECT t.user_id,t2.full_name,t2.avatar,t.role FROM tbl_user_classroom t JOIN tbl_users t2 ON t.user_id = t2.id WHERE t.class_id =${class_id} `
+    listByClassId(class_id) {
+        let sql = `SELECT t.user_id,t2.full_name,t2.avatar,t.role FROM tbl_user_classroom t JOIN tbl_users t2 ON t.user_id = t2.id WHERE t.class_id =${class_id} AND t.status='A'`
         return new Promise((resolve, reject) => {
             this.db.connection.query(sql, (err, rows) => {
                 if (err) reject(err);

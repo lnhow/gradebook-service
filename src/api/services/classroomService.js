@@ -145,7 +145,7 @@ class classroomService {
             throw new Error("Không tìm thấy thông tin của giáo viên lớp học này");
         }
 
-        let [listUser, listUser_err] = await this.handle(this.repo_user_class.listStudentByClassId(id));
+        let [listUser, listUser_err] = await this.handle(this.repo_user_class.listByClassId(id));
         if (listUser_err) throw (listUser_err);
 
         return {
