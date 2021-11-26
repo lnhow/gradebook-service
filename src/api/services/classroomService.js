@@ -19,7 +19,7 @@ class classroomService {
 
         this.repo_invite = new invitationRepository();
 
-        this.repo_assginment = new assignmentRepository();
+        this.repo_assignment = new assignmentRepository();
     }
 
     async list(params) {
@@ -152,8 +152,8 @@ class classroomService {
         let [listUser, listUser_err] = await this.handle(this.repo_user_class.listByClassId(id));
         if (listUser_err) throw (listUser_err);
 
-        let [listAssginment, listAssginment_err] = await this.handle(this.repo_assginment.listByClass(id));
-        if (listAssginment_err) throw (listAssginment_err);
+        let [listAssignment, listAssignment_err] = await this.handle(this.repo_assignment.listByClass(id));
+        if (listAssignment_err) throw (listAssignment_err);
 
         return {
             success: true,
