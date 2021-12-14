@@ -44,7 +44,7 @@ class gradeService {
         let totalPoint =0
         let totalWeight =0
         let flage = true
-        list_by_sql.map((value,index) =>
+        await Promise.all(list_by_sql.map(async (value,index) =>
         {
             let {id,title,weight,finalized} = value
             let [grade,err_grade] = await this.handle(this.repo.showGradeByCodeAndId(student_code,id))
@@ -57,7 +57,9 @@ class gradeService {
             }
             else
             {
+                flage=false
                 listGrade.push({
+                    id,
                     title,
                     weight,
                     finalized,
@@ -65,9 +67,11 @@ class gradeService {
                 })
                 totalPoint = "Chưa cập nhập đủ điểm"
             }
-        })
+        }))
         if (flage)
-            totalPoint= totalPoint/totalWeight
+        {
+            totalPoint= Math.round(totalPoint/totalWeight* 100) / 100
+        }
         return {
             success: true,
             data: {
