@@ -33,4 +33,9 @@ module.exports = function (app, version) {
     //assignment
     const assignmentCtrl = require('./api/controllers/assignmentController');
     app.use(`${version}/assignment`, assignmentCtrl);
+
+    //grades
+    const gradeCtrl = require('./api/controllers/gradeController');
+    app.use(`${version}/grade`, gradeCtrl);
+
 }
