@@ -12,7 +12,15 @@ router.get('/studentgrade/:id', auth, (req, res) => {
     let id = req.params.id;
     let params = req.body;
     params.user_info = req.user;
-    service.showGradeByClassId(id,params).then((data) => res.status(200).send(data)).
+    service.showGradeStudentByClassId(id,params).then((data) => res.status(200).send(data)).
+        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+});
+
+router.get('/classgrade/:id', auth, (req, res) => {
+    let id = req.params.id;
+    let params = req.body;
+    params.user_info = req.user;
+    service.showClassGrade(id,params).then((data) => res.status(200).send(data)).
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
 });
 

@@ -15,7 +15,7 @@ class gradeService {
         this.repo_assignment = new assignmentRepository();
     }
 
-    async showGradeByClassId(id,params)
+    async showGradeStudentByClassId(id,params)
     {
         let [details_user, err_details_user] = await this.handle(this.repo_user.show(params.user_info.id));
         if (err_details_user) throw (err_details_user);
@@ -24,6 +24,7 @@ class gradeService {
         }
         if (this.isEmpty(details_user.user_code))
             throw new Error("Bạn chưa cập nhập mã sinh viên")
+
         let [details_classroom, err_details_classroom] = await this.handle(this.repo_classroom.show(id));
         if (err_details_classroom) throw (err_details_classroom);
         if (this.isEmpty(details_classroom) || details_classroom.status === 'D') {
@@ -35,16 +36,71 @@ class gradeService {
         if (this.isEmpty(user_class)) {
             throw new Error("Bạn chưa tham gia lớp học này");
         }
+
         let [studentBoard,err_studentBoard] = await(this.handle(this.repo_student_board.showByCodeAndId(details_user.user_code,id)))
         if (err_studentBoard) throw (err_studentBoard);
+        if (this.isEmpty(studentBoard))
+            throw new Error("Bạn không có trong danh sách lớp")
+
         let {student_code,full_name} = studentBoard
-        let [list_by_sql, list_by_sql_err] = await this.handle(this.repo_assignment.listByClass(id));
-        if (list_by_sql_err) throw (list_by_sql_err);
+        let [listAssignment, err_listAssignment] = await this.handle(this.repo_assignment.listByClass(id));
+        if (err_listAssignment) throw (err_listAssignment);
+        let {totalPoint,listGrade} = await this.getGrade(listAssignment,student_code)
+        return {
+            success: true,
+            data: {
+                student_code,
+                full_name,
+                totalPoint,
+                listGrade
+            },
+            message: "Lấy bảng điểm sinh viên thành công!"
+        }
+    }
+
+    async showClassGrade(id,params)
+    {
+        let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(id));
+        if (list_users_class_err) throw (list_users_class_err);
+        if (!this.verifyTeacher(list_users_class, params.user_info.id)) {
+            return {
+                success: false,
+                data: [],
+                message: "Bạn không phải giáo viên của lớp nên không có quyền xem điểm toàn bộ sinh viên!"
+            }
+        }
+
+        let [listAssignment, err_listAssignment] = await this.handle(this.repo_assignment.listByClass(id));
+        if (err_listAssignment) throw (err_listAssignment);
+
+        let [listCode,err_listCode] = await(this.handle(this.repo_student_board.showListCodeByClassId(id)))
+        if (err_listCode) throw (err_listCode);
+
+        let gradeClass = []
+        for (let i = 0; i < listCode.length; i++) {
+            let {student_code,full_name} =listCode[i]
+            let {totalPoint,listGrade} = await this.getGrade(listAssignment,student_code)
+            gradeClass.push({
+                student_code,
+                full_name,
+                totalPoint,
+                listGrade
+            })
+        }
+        return {
+            success: true,
+            data: gradeClass,
+            message: "Lấy bảng điểm lớp thành công!"
+        }
+    }
+
+    async getGrade(listAssignment,student_code)
+    {
         let listGrade= []
         let totalPoint =0
         let totalWeight =0
         let flage = true
-        await Promise.all(list_by_sql.map(async (value,index) =>
+        await Promise.all(listAssignment.map(async(value) =>
         {
             let {id,title,weight,finalized} = value
             let [grade,err_grade] = await this.handle(this.repo.showGradeByCodeAndId(student_code,id))
@@ -63,7 +119,9 @@ class gradeService {
                     title,
                     weight,
                     finalized,
-                    grade: ""
+                    grade: "",
+                    created_at:"",
+                    updated_at:"",
                 })
                 totalPoint = "Chưa cập nhập đủ điểm"
             }
@@ -73,15 +131,19 @@ class gradeService {
             totalPoint= Math.round(totalPoint/totalWeight* 100) / 100
         }
         return {
-            success: true,
-            data: {
-                student_code,
-                full_name,
-                totalPoint,
-                listGrade
-            },
-            message: "Lấy bảng điểm thành công!"
+            listGrade,
+            totalPoint
         }
+    }
+
+    verifyTeacher(list_users_class, user_id) {
+        let check = false;
+        list_users_class.map(item => {
+            if (item.role === 'T' && item.user_id === user_id) {
+                check = true;
+            }
+        });
+        return check;
     }
 
     isEmpty(value) {

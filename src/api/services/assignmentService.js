@@ -149,7 +149,8 @@ class assignmentService {
         let _params_update = {
             title: params.title  || details.title,
             weight: params.weight || details.weight,
-            status: params.status || details.status
+            status: params.status || details.status,
+            finalized: params.finalized || details.finalized
         }
         let [up_assign, up_assign_err] = await this.handle(this.repo.update(id, _params_update));
         if (up_assign_err) throw (up_assign_err);

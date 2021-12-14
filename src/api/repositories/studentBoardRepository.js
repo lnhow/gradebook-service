@@ -22,6 +22,22 @@ class studentBoardRepository extends BaseRepository {
             });
         })
     }
+
+    showListCodeByClassId(class_id)
+    {
+        let sql = 
+        `SELECT * FROM ${this.table}
+        WHERE class_id=${class_id}`;
+        return new Promise((resolve, reject) => {
+            this.db.connection.query(sql, (err, rows) => {
+                if (err) {
+                    reject(err);
+                  } else {
+                    resolve(rows);
+                  }
+            });
+        })
+    }
 }
 
 module.exports = studentBoardRepository;
