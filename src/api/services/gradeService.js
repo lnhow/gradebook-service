@@ -73,7 +73,7 @@ class gradeService {
 
         let [listAssignment, err_listAssignment] = await this.handle(this.repo_assignment.listByClass(id));
         if (err_listAssignment) throw (err_listAssignment);
-        console.log(listAssignment)
+        
         let [listCode,err_listCode] = await(this.handle(this.repo_student_board.showListCodeByClassId(id)))
         if (err_listCode) throw (err_listCode);
 
