@@ -60,7 +60,7 @@ class gradeService {
 
     async showClassGrade(id,params)
     {
-        let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(id));
+       let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(id));
         if (list_users_class_err) throw (list_users_class_err);
         if (!this.verifyTeacher(list_users_class, params.user_info.id)) {
             return {
@@ -68,7 +68,7 @@ class gradeService {
                 data: [],
                 message: "Bạn không phải giáo viên của lớp nên không có quyền xem điểm toàn bộ sinh viên!"
             }
-        }
+        } 
 
         let [listAssignment, err_listAssignment] = await this.handle(this.repo_assignment.listByClass(id));
         if (err_listAssignment) throw (err_listAssignment);
@@ -91,6 +91,42 @@ class gradeService {
             success: true,
             data: gradeClass,
             message: "Lấy bảng điểm lớp thành công!"
+        }
+    }
+    
+    async update(params)
+    {
+        let {student_id,assignment_id,grade} = params
+        if (this.isEmpty(student_id))
+            throw new Error("Vui lòng truyền mã sinh viên")
+        if (this.isEmpty(assignment_id))
+            throw new Error("Vui lòng truyền mã sinh viên")
+        let [assignmentDetails,err_assignmentDetails] = await this.handle(this.repo_assignment.show(assignment_id))
+        if(err_assignmentDetails) throw (err_assignmentDetails)
+
+        let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(assignmentDetails.class_id));
+        if (list_users_class_err) throw (list_users_class_err);
+        if (!this.verifyTeacher(list_users_class, params.user_info.id)) {
+            return {
+                success: false,
+                data: [],
+                message: "Bạn không phải giáo viên của lớp nên không có quyền chỉnh sửa điểm sinh viên!"
+            }
+        } 
+        let _params_update = {
+            grade
+        }
+        let [up_grade, up_grade_err] = await this.handle(this.repo.updateByCodeAndId(student_id,assignment_id, _params_update));
+        if (up_grade_err) throw (up_grade_err);
+        return {
+            success: true,
+            data: 
+            {
+                student_id,
+                assignment_id,
+                ..._params_update
+            },
+            message: "Update điểm thành công!"
         }
     }
 

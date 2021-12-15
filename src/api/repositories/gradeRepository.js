@@ -22,6 +22,24 @@ class gradeRepository extends BaseRepository {
             });
         })
     }
+
+    updateByCodeAndId(student_code,assignment_id, params) {
+        const now_date = new Date();
+        params.updated_at = now_date;
+    
+        const sql = `UPDATE ${this.table} SET ? WHERE student_id=${student_code} AND assignment_id=${assignment_id}`;
+    
+        return new Promise((resolve, reject) => {
+          this.db.connection.query(sql, params, (err, rows) => {
+            if (err) {
+              reject(err);
+            }
+            else {
+              resolve(rows);
+            }
+          });
+        });
+      }
 }
 
 module.exports = gradeRepository;
