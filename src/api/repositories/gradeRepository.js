@@ -25,13 +25,28 @@ class gradeRepository extends BaseRepository {
 
     updateByCodeAndId(student_code,assignment_id, params) {
         const now_date = new Date();
-        params.updated_at = now_date;
-    
-        const sql = `UPDATE ${this.table} SET ? WHERE student_id=${student_code} AND assignment_id=${assignment_id}`;
+        const updated_at = now_date.toISOString();
+        const grade = params.grade;
+
+        let paramQuery = [
+          student_code, assignment_id, grade, updated_at, updated_at, // On insert
+          grade, updated_at // On update
+        ];
+
+        const sql = `INSERT INTO ${this.table}` +
+          ` (student_id, assignment_id, grade, created_at, updated_at)`+
+          ` VALUES(?, ?, ?, ?, ?)` +
+          ` ON DUPLICATE KEY UPDATE` + 
+          ` grade=?, updated_at=?`;
+        // This below does not insert if not exist
+        //const sql = `UPDATE ${this.table} SET ? WHERE student_id=${student_code} AND assignment_id=${assignment_id}`;
     
         return new Promise((resolve, reject) => {
-          this.db.connection.query(sql, params, (err, rows) => {
+          this.db.connection.query(sql, 
+            paramQuery, 
+            (err, rows) => {
             if (err) {
+              console.log(err);
               reject(err);
             }
             else {
