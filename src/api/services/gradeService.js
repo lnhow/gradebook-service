@@ -60,6 +60,7 @@ class gradeService {
 
     async showClassGrade(id,params)
     {
+
        let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(id));
         if (list_users_class_err) throw (list_users_class_err);
         if (!this.verifyTeacher(list_users_class, params.user_info.id)) {
@@ -72,13 +73,14 @@ class gradeService {
 
         let [listAssignment, err_listAssignment] = await this.handle(this.repo_assignment.listByClass(id));
         if (err_listAssignment) throw (err_listAssignment);
-
+        console.log(listAssignment)
         let [listCode,err_listCode] = await(this.handle(this.repo_student_board.showListCodeByClassId(id)))
         if (err_listCode) throw (err_listCode);
 
         let gradeClass = []
         for (let i = 0; i < listCode.length; i++) {
             let {student_code,full_name} =listCode[i]
+            console.log(student_code,full_name)
             let {totalPoint,listGrade} = await this.getGrade(listAssignment,student_code)
             gradeClass.push({
                 student_code,
@@ -136,9 +138,9 @@ class gradeService {
         let totalPoint =0
         let totalWeight =0
         let flage = true
-        await Promise.all(listAssignment.map(async(value) =>
+        for (let i=0;i< listAssignment.length;i++)
         {
-            let {id,title,weight,finalized} = value
+            let {id,title,weight,finalized} = listAssignment[i]
             let [grade,err_grade] = await this.handle(this.repo.showGradeByCodeAndId(student_code,id))
             if (err_grade) throw (err_grade);
             if(grade)
@@ -161,7 +163,7 @@ class gradeService {
                 })
                 totalPoint = "Chưa cập nhập đủ điểm"
             }
-        }))
+        }
         if (flage)
         {
             totalPoint= Math.round(totalPoint/totalWeight* 100) / 100
