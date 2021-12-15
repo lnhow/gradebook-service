@@ -25,7 +25,7 @@ class gradeRepository extends BaseRepository {
 
     updateByCodeAndId(student_code,assignment_id, params) {
         const now_date = new Date();
-        const updated_at = now_date.toISOString();
+        const updated_at = now_date;
         const grade = params.grade;
 
         let paramQuery = [
