@@ -38,4 +38,7 @@ module.exports = function (app, version) {
     const gradeCtrl = require('./api/controllers/gradeController');
     app.use(`${version}/grade`, gradeCtrl);
 
+    //media
+    const mediaCtrl = require('./api/controllers/mediaController');
+    app.use(`${version}/media`, mediaCtrl);
 }

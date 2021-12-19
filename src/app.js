@@ -1,9 +1,3 @@
-/*
- * Copyright (c) Nhat Tin 2019. All Rights Reserved.
- * @author khoa.nt
- * @develop by: Hieu.LT
- */
-
 const express = require('express');
 const helmet = require("helmet");
 const config = require('config');
@@ -71,7 +65,7 @@ require('./routes')(app, version);
 /* End Split */
 
 app.get('/', (req, res) => {
-  res.send('This is service of DClassroom . Today is ' + new Date());
+  res.send('This is service of gradebook. Today is ' + new Date());
 });
 
 // app.listen(port);
