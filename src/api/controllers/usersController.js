@@ -63,8 +63,9 @@ router.post('/change-password', auth, (req, res) => {
 });
 
 //Get list user
-router.get('/', auth, (req, res) => {
+router.get('/:user_type', auth, (req, res) => {
     let params = req.body;
+    params.user_type=req.params.user_type
     params.user_info = req.user;
     service.listUser(params).then((data) => res.status(200).send(data)).
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
