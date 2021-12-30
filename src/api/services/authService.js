@@ -18,7 +18,7 @@ class AuthService {
     }
 
     async signIn(params) {
-
+        let user_type
         if (this.isEmpty(params.username)) {
             throw new Error('Vui lòng truyền username');
         }
@@ -26,17 +26,22 @@ class AuthService {
         if (this.isEmpty(params.password)) {
             throw new Error('Vui lòng truyền password');
         }
-
-        let [user, user_err] = await this.handle(this.user_repo.showByCol("username", params.username));
+        if (this.isEmpty(params.user_type)) {
+            user_type = "C"
+        }
+        else user_type = params.user_type
+        let [user, user_err] = await this.handle(this.user_repo.showByKey(params.username,user_type));
         if (user_err) throw (user_err);
-
         if (this.isEmpty(user)) {
             throw new Error('Tài khoản không tồn tại');
         }
 
         // Check active user
-        if (user.status !== 'A') {
+        if (user.status === 'I') {
             throw new Error('Tải khoản chưa được kích hoạt');
+        }
+        if (user.status === 'D') {
+            throw new Error('Tải khoản bạn đã bị khóa');
         }
 
         // Check match password

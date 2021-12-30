@@ -31,6 +31,13 @@ router.post('/', private, (req, res) => {
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
 });
 
+router.post('/admin', auth, (req, res) => {
+    let params = req.body;
+    params.user_info = req.user;
+    service.createAdmin(params).then((data) => res.status(200).send(data)).
+        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+});
+
 //Get user
 router.get('/owner', auth, (req, res) => {
     let params = req.body;
@@ -52,6 +59,23 @@ router.post('/change-password', auth, (req, res) => {
     let params = req.body;
     params.user_info = req.user;
     service.changePassword(params).then((data) => res.status(200).send(data)).
+        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+});
+
+//Get list user
+router.get('/', auth, (req, res) => {
+    let params = req.body;
+    params.user_info = req.user;
+    service.listUser(params).then((data) => res.status(200).send(data)).
+        catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+});
+
+//Update user by admin
+router.put('/update/:id', auth, (req, res) => {
+    let params = req.body;
+    let id = req.params.id;
+    params.user_info = req.user;
+    service.updateUserByAdmin(id,params).then((data) => res.status(200).send(data)).
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
 });
 
