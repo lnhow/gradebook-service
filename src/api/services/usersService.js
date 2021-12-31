@@ -334,6 +334,71 @@ class usersService {
             message: "Lấy danh sách user thành công"
         }
     }
+
+    async adminGetUser(id, params) {
+        if (params.user_info.user_type !== 'A') { 
+            throw new Error("Tài khoản bạn không đủ thẩm quyền");
+        }
+
+        let [details, err] = await this.handle(this.repo.show(id));
+        if (err) throw (err);
+        if (this.isEmpty(details)) {
+            throw new Error("Không tìm thấy user này");
+        }
+
+        let {
+            full_name,user_code,date_of_birth,
+            phone,sex,avatar, username,
+            status
+        } = details
+        return {
+            success: true,
+            data: {
+                id,
+                username,
+                full_name,
+                user_code,
+                date_of_birth,
+                phone,
+                sex,
+                avatar,
+                status
+            },
+            message: "Lấy người dùng thành công"
+        };
+    }
+
+    async adminResetPassword(id, params) {
+        if (params.user_info.user_type !== 'A') { 
+            throw new Error("Tài khoản bạn không đủ thẩm quyền");
+        }
+
+        if (this.isEmpty(params.password)) {
+            throw new Error("Vui lòng truyền password");
+        }
+
+        let [user, err] = await this.handle(this.repo.show(id));
+        if (err) throw (err);
+        if (this.isEmpty(user) || user.status === 'D') {
+            throw new Error("Không tìm thấy user này");
+        }
+
+        const { salt, passwordHash } = helper.saltHashPassword(params.password);
+        let _params_update = {
+            password: passwordHash,
+            salt: salt
+        }
+        let [up_user_password, up_user_password_err] = await this.handle(this.repo.update(id,_params_update));
+        if (up_user_password_err) throw (up_user_password_err);
+
+        return {
+            success: true,
+            data: {
+                ..._params_update
+            },
+            message: "Đổi mật khẩu thành công"
+        }
+    }
     
 
     isEmpty(value) {

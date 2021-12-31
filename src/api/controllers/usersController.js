@@ -71,6 +71,22 @@ router.get('/:user_type', auth, (req, res) => {
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
 });
 
+router.get('/manage/:id', auth, (req, res) => {
+    let params = req.body;
+    let id = req.params.id;
+    params.user_info = req.user;
+    service.adminGetUser(id, params).then((data) => res.status(200).send(data)).
+    catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+})
+
+router.put('/manage/reset', auth, (req, res) => {
+    let params = req.body;
+    let userId = params.user_id;
+    params.user_info = req.user;
+    service.adminResetPassword(userId, params).then((data) => res.status(200).send(data)).
+    catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
+})
+
 //Update user by admin
 router.put('/update/:id', auth, (req, res) => {
     let params = req.body;
