@@ -33,6 +33,11 @@ class classroomService {
             is_limit = false;
         }
 
+        if (params.user_info.user_type !== 'A') {
+            // Show only active classes to non admin user
+            params.status = 'A';
+        }
+
         this.col.join('tbl_users t2', "t.owner_id", "t2.id", "");
         this.col.addSelect([
             "t.*",
@@ -133,16 +138,23 @@ class classroomService {
 
         let [details, err] = await this.handle(this.repo.show(id));
         if (err) throw (err);
-        if (this.isEmpty(details) || details.status === 'D') {
+        if (this.isEmpty(details)) {
             throw new Error("Không tìm thấy lớp học này");
         }
 
-        let [user_class, user_class_err] = await this.handle(this.repo_user_class.showByKey(id, params.user_info.id));
-        if (user_class_err) throw (user_class_err);
-        if (this.isEmpty(user_class)) {
-            throw new Error("Bạn chưa tham gia lớp học này");
+        if (params.user_info.user_type !== 'A') {
+            if (details.status === 'D') {
+                throw new Error("Không tìm thấy lớp học này");
+            }
+
+            // Check client user permission
+            let [user_class, user_class_err] = await this.handle(this.repo_user_class.showByKey(id, params.user_info.id));
+            if (user_class_err) throw (user_class_err);
+            if (this.isEmpty(user_class)) {
+                throw new Error("Bạn chưa tham gia lớp học này");
+            }
+            if (user_class.role === 'S') delete details.class_code;
         }
-        if (user_class.role === 'S') delete details.class_code;
 
         let [owner_info, owner_info_err] = await this.handle(this.repo_user.show(details.owner_id));
         if (owner_info_err) throw (owner_info_err);
