@@ -33,11 +33,6 @@ class classroomService {
             is_limit = false;
         }
 
-        if (params.user_info.user_type !== 'A') {
-            // Show only active classes to non admin user
-            params.status = 'A';
-        }
-
         this.col.join('tbl_users t2', "t.owner_id", "t2.id", "");
         this.col.addSelect([
             "t.*",
