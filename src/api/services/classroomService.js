@@ -105,9 +105,11 @@ class classroomService {
         if (this.isEmpty(details)) {
             throw new Error("Không tìm thấy lớp học này");
         }
-
         if (params.user_info.id !== details.owner_id) {
-            throw new Error("Không có quyền chỉnh sửa lớp này");
+            // Check if user is admin
+            if (params.user_info.user_type !== 'A') {
+                throw new Error("Không có quyền chỉnh sửa lớp này");
+            }
         }
         let _params_update = {
             class_name: params.class_name || details.class_name,
