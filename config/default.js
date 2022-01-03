@@ -13,6 +13,7 @@ module.exports = {
         lang_code: 'vi',
         env: 'local',
         secret_key: 'a3e75cdd13bdff759417988f501978ae',
+        auth_header: 'Authorization',
     },
 
     client: {
