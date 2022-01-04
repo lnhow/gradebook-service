@@ -96,4 +96,63 @@ router.put('/update/:id', auth, (req, res) => {
         catch(err => res.status(400).send({ success: false, data: [], message: err.message }));
 });
 
+// Activate user account, normal user only
+router.post('/activation', (req, res) => {
+    let params = req.body;
+    service.handleActivateAccount(params)
+    .then((data) => res.status(200).send(data))
+    .catch(err => {
+        res.status(400).json({ 
+            success: false, 
+            data: [], 
+            message: err.message 
+        })
+    })
+});
+
+// Verify valid one time code
+router.get('/verify/ot-code', (req, res) => {
+    let ot_code = req.query.ot_code;
+    let params = {
+        ot_code: ot_code,
+    };
+    service.verifyOneTimeToken(params)
+    .then((data) => res.status(200).send(data))
+    .catch(err => {
+        res.status(400).json({ 
+            success: false, 
+            data: [], 
+            message: err.message 
+        })
+    })
+})
+
+// Request reset password user account, normal user only
+router.post('/password/forgot', (req, res) => {
+    let params = req.body;
+    service.handleForgotPassword(params)
+    .then((data) => res.status(200).send(data))
+    .catch(err => {
+        res.status(400).json({ 
+            success: false, 
+            data: [], 
+            message: err.message 
+        })
+    })
+});
+
+// Reset password user account, normal user only
+router.post('/password/reset', (req, res) => {
+    let params = req.body;
+    service.handlePasswordReset(params)
+    .then((data) => res.status(200).send(data))
+    .catch(err => {
+        res.status(400).json({ 
+            success: false, 
+            data: [], 
+            message: err.message 
+        })
+    })
+})
+
 module.exports = router;

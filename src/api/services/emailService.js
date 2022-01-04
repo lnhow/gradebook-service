@@ -7,6 +7,14 @@ const TEMPLATE = [
         template: "invite_class",
         subject: "THƯ MỜI THAM GIA VÀO LỚP HỌC | GRADEBOOK",
     },
+    {
+        template: "user_activation",
+        subject: "KÍCH HOẠT TÀI KHOẢN | GRADEBOOK",
+    },
+    {
+        template: "user_password_forgot",
+        subject: "RESET MẬT KHẨU | GRADEBOOK",
+    },
 ];
 const options = {
     viewEngine: {
@@ -38,6 +46,10 @@ class usersService {
         switch (type) {
             case 1: //INVITE EMAIL
                 return (!this.isEmpty(content.invite_user) && !this.isEmpty(content.invite_link));
+            case 2: //ACCOUNT ACTIVATION EMAIL
+                return (!this.isEmpty(content.activation_link));
+            case 3: //ACCOUNT FORGOT PASSWORD EMAIL
+                return (!this.isEmpty(content.reset_link));
             default:
                 return false;
         }
