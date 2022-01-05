@@ -46,11 +46,11 @@ class gradeReviewService {
         this.col.addSelect([
             "t.*",
         ]);
+        this.col.where("t.class_id","=",params.class_id)
         this.col.filters(params);
         this.col.addSort('t.created_at', 'DESC');
         let count = this.col.finallizeTotalCount();
         let sql = this.col.finallize(is_limit);
-        console.log(sql)
         let [data, data_err] = await this.handle(this.repo.list(sql));
         if (data_err) throw (data_err);
         let [total,total_err] = await this.handle(this.repo.listCount(count));
