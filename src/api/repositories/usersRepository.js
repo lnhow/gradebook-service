@@ -24,6 +24,21 @@ class usersRepository extends BaseRepository {
         });
     }
 
+    showByStudentCode(user_code) {
+        const sql = `SELECT t.* FROM ${this.table} t 
+        WHERE t.user_code = "${user_code}" LIMIT 1`;
+        return new Promise((resolve, reject) => {
+            this.db.connection.query(sql, (err, rows) => {
+                if (err) reject(err);
+                else if (rows.length === 1) {
+                    resolve(rows[0]);
+                } else {
+                    resolve(null); 
+                }
+            });
+        });
+    }
+
     listByType(user_type) {
         const sql = `SELECT t.* FROM ${this.table} t 
         WHERE  t.user_type = "${user_type}"`;
