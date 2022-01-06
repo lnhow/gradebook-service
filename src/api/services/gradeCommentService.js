@@ -133,8 +133,9 @@ class gradeCommentService {
             is_limit = false;
         }
         this.col.addSelect([
-            "t.*",
+            "t2.full_name,t.*",
         ]);
+        this.col.join('tbl_users t2', "t.owner_id", "t2.id", "");
         this.col.where("t.review_id","=",params.review_id);
         this.col.where("t.status","=","A");
         this.col.filters(params);
@@ -150,7 +151,7 @@ class gradeCommentService {
             success: true,
             data,
             total: total.total,
-            message: "Lấy danh sách grade_review thành công"
+            message: "Lấy danh sách comment thành công"
         }
     }
 
