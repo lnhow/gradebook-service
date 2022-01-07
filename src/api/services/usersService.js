@@ -2,11 +2,17 @@ const moment = require('moment');
 
 const usersRepository = require("../repositories/usersRepository");
 const usersCollections = require("../collections/usersCollections");
+const EmailService = require('../services/emailService');
+
 const helper = require("../../utils/helper");
+const { account_ot_code_length, gen_max_retry_account_ot_code } = require('../../utils/constant');
+const { genForgotPasswordLink, genActivationLink } = require('../../utils/clientLink.helper');
+
 class usersService {
     constructor() {
         this.repo = new usersRepository();
         this.col = new usersCollections();
+        this.email_service = new EmailService();
     }
 
     async create(params) {
@@ -76,7 +82,7 @@ class usersService {
         if (chk_username_err) throw (chk_username_err);
 
         if (!this.isEmpty(chk_username)) {
-            throw new Error("Đã tồn tại username");
+            throw new Error("Đã tồn tại tài khoản");
         }
 
         // Validate fullname
@@ -84,6 +90,7 @@ class usersService {
             throw new Error("Họ và tên là bắt buộc");
         }
 
+        let extra_info = {};
         // OAuth does is secure, without password, ignore
         if (!isOAuth) {
             // Validate password
@@ -100,6 +107,26 @@ class usersService {
                     "Mật khẩu tối thiểu 8 ký tự, ít nhất một ký tự viết hoa, một ký tự viết thường, một số và một ký tự đặc biệt"
                 );
             }
+
+            // Generate one time used code
+            let [ot_code, err_ot_code] = await this.handle(this.genOneTimeCode());
+            if (err_ot_code) throw (err_ot_code);
+
+            // Send email
+            let params_invite_email = {
+                type: 2,
+                email: params.username,
+                content: {
+                    activation_link: genActivationLink(ot_code)
+                }
+            }
+            let [send_email, send_email_err] = await this.handle(this.email_service.sendEmail(params_invite_email));
+            if (send_email_err) throw (send_email_err);
+
+            extra_info = {
+                ot_code: ot_code,
+                status: 'I',    // Inactive by default
+            }
         }
 
         const { salt, passwordHash } = helper.saltHashPassword(params.password || '');
@@ -110,7 +137,8 @@ class usersService {
             password: passwordHash,
             full_name: params.full_name || params.username,
             user_type: "C",
-            avatar: params.avatar || ''
+            avatar: params.avatar || '',
+            ...extra_info,
         }
 
         let [new_user, new_user_err] = await this.handle(this.repo.create(_params_new_users));
@@ -397,6 +425,169 @@ class usersService {
                 ..._params_update
             },
             message: "Đổi mật khẩu thành công"
+        }
+    }
+
+    async genOneTimeCode(retry = 0) {
+        if (retry >= gen_max_retry_account_ot_code) {
+            throw new Error('Không tạo được mã dùng một lần');
+        }
+        const ot_code = helper.genRandomString(account_ot_code_length);
+        let [user, err_user] = await this.handle(this.repo.showByOneTimeCode(ot_code));
+        if (err_user) {
+            throw err_user;
+        }
+
+        if (this.isEmpty(user)) {
+            return ot_code;
+        }
+        return this.genOneTimeCode(retry + 1);
+    }
+
+    async handleForgotPassword(params, user_type = 'C') {
+        if (this.isEmpty(params.email)) {
+            throw new Error('Vui lòng truyền email');
+        }
+
+        // Check user exist
+        let [user, err_user] = await this.handle(this.repo.showByCol("username", params.email));
+        if (err_user) throw (err_user);
+
+        if (this.isEmpty(user) || user.status === 'D' || user.user_type !== user_type) {
+            throw new Error("Không tồn tại người dùng với email này");
+        }
+
+        // Block weird cases
+        if (user.status === 'I') {
+            throw new Error('Tài khoản chưa được kích hoạt');
+        }
+
+        const userId = user.id;
+
+        // Generate one time used code
+        let [ot_code, err_ot_code] = await this.handle(this.genOneTimeCode());
+        if (err_ot_code) throw (err_ot_code);
+
+        let _params_update = {
+            ot_code: ot_code
+        }
+
+        let [up_user, up_user_err] = await this.handle(this.repo.update(userId, _params_update));
+        if (up_user_err) throw (up_user_err);
+
+        // Send email
+        let params_invite_email = {
+            type: 3,
+            email: params.email,
+            content: {
+                reset_link: genForgotPasswordLink(ot_code)
+            }
+        }
+        let [send_email, send_email_err] = await this.handle(this.email_service.sendEmail(params_invite_email));
+        if (send_email_err) throw (send_email_err);
+
+        return {
+            success: true,
+            data: [],
+            message: "Yêu cầu reset password thành công"
+        }
+    }
+
+    async verifyOneTimeToken(params) {
+        if (this.isEmpty(params.ot_code)) {
+            throw new Error('Không có mã một lần');
+        }
+        
+        let [user, err_user] = await this.handle(this.repo.showByOneTimeCode(params.ot_code));
+        if (err_user) throw (err_user);
+        if (this.isEmpty(user) || user.status === 'D' || user.user_type !== 'C') {
+            throw new Error("Mã không hợp lệ");
+        }
+
+        return {
+            success: true,
+            data: [],
+            message: 'Mã một lần hợp lệ'
+        }
+    }
+
+    async handlePasswordReset(params, user_type = 'C') {
+        if (this.isEmpty(params.ot_code)) {
+            throw new Error('Không có mã reset');
+        }
+        if (this.isEmpty(params.password)) {
+            throw new Error('Không có mật khẩu mới');
+        }
+
+        if (!params.password.match(
+                /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
+        )) {
+            throw new Error(
+                'Mật khẩu tối thiểu 8 ký tự, ít nhất một ký tự viết hoa'
+                + ', một ký tự viết thường, một số và một ký tự đặc biệt(#?!@$%^&*-)'
+            );
+        }
+
+        let [user, err_user] = await this.handle(this.repo.showByOneTimeCode(params.ot_code));
+        if (err_user) throw (err_user);
+
+        if (this.isEmpty(user) || user.status === 'D' || user.user_type !== user_type) {
+            throw new Error("Mã reset không hợp lệ");
+        }
+
+        // Block weird cases
+        if (user.status === 'I') {
+            throw new Error('Tài khoản chưa được kích hoạt');
+        }
+
+        const { salt, passwordHash } = helper.saltHashPassword(params.password);
+        let _params_update = {
+            ot_code: null,  // Consume one time code
+            password: passwordHash,
+            salt: salt
+        }
+
+        const userId = user.id
+        let [user_updated, err_user_updated] = await this.handle(this.repo.update(userId,_params_update));
+        if (err_user_updated) throw (err_user_updated);
+        
+        return {
+            success: true,
+            data: [],
+            message: 'Reset mật khẩu thành công'
+        }
+    }
+
+    async handleActivateAccount(params, user_type = 'C') {
+        if (this.isEmpty(params.ot_code)) {
+            throw new Error('Không có mã kích hoạt');
+        }
+
+        let [user, err_user] = await this.handle(this.repo.showByOneTimeCode(params.ot_code));
+        if (err_user) throw (err_user);
+
+        if (this.isEmpty(user) || user.status === 'D' || user.user_type !== user_type) {
+            throw new Error(`Mã kích hoạt không hợp lệ (${params.ot_code})`);
+        }
+
+        // Block weird cases
+        if (user.status !== 'I') {
+            throw new Error('Tài khoản đã được kích hoạt trước đó');
+        }
+
+        let _params_update = {
+            ot_code: null,  // Consume one time code
+            status: 'A',
+        }
+
+        const userId = user.id
+        let [user_updated, err_user_updated] = await this.handle(this.repo.update(userId,_params_update));
+        if (err_user_updated) throw (err_user_updated);
+        
+        return {
+            success: true,
+            data: [],
+            message: 'Kích hoạt tài khoản thành công'
         }
     }
     
