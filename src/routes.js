@@ -38,6 +38,15 @@ module.exports = function (app, version) {
     const gradeCtrl = require('./api/controllers/gradeController');
     app.use(`${version}/grade`, gradeCtrl);
 
+    //grade_review
+    const gradeReviewCtrl = require('./api/controllers/gradeReviewController');
+    app.use(`${version}/gradereview`, gradeReviewCtrl);
+
+    //comment
+    const gradeCommentCtrl = require('./api/controllers/gradeCommentController');
+    app.use(`${version}/gradecomment`, gradeCommentCtrl);
+
+
     //media
     const mediaCtrl = require('./api/controllers/mediaController');
     app.use(`${version}/media`, mediaCtrl);

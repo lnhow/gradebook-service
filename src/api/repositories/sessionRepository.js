@@ -22,7 +22,7 @@ class sessionRepository extends BaseRepository {
     }
 
     getUserInfo(token) {
-        let sql = ` SELECT s.token,u.id, u.username, u.full_name, u.user_type
+        let sql = ` SELECT s.token,u.id, u.username, u.full_name, u.user_type, u.user_code
                 FROM ${table} s 
                 JOIN tbl_users u ON u.id = s.user_id
                 WHERE s.token='${token}'`;
