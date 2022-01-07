@@ -139,7 +139,7 @@ class gradeCommentService {
         this.col.where("t.review_id","=",params.review_id);
         this.col.where("t.status","=","A");
         this.col.filters(params);
-        this.col.addSort('t.created_at', 'ASC');
+        this.col.addSort('t.created_at', 'DESC');
         let count = this.col.finallizeTotalCount();
         let sql = this.col.finallize(is_limit);
         let [data, data_err] = await this.handle(this.repo.list(sql));
