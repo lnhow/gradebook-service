@@ -21,6 +21,7 @@ morgan(function (tokens, req, res) {
 
 const app = express();
 app.use(helmet());
+require('./utils/passport.utils')(app);
 
 const { port, version, env } = config.get('api');
 
