@@ -220,7 +220,8 @@ class gradeReviewService {
             if (current_grade_err) throw (current_grade_err);
 
             if (current_grade) {
-                let [up_current_grade, up_current_grade_err] = await this.handle(this.repo_grade.update(current_grade.id, {
+                console.log(current_grade);
+                let [up_current_grade, up_current_grade_err] = await this.handle(this.repo_grade.update(current_grade.grade_id, {
                     grade: params.final_grade || details.final_grade
                 }));
                 if (up_current_grade_err) throw (up_current_grade_err)
