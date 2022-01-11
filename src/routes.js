@@ -46,6 +46,9 @@ module.exports = function (app, version) {
     const gradeCommentCtrl = require('./api/controllers/gradeCommentController');
     app.use(`${version}/gradecomment`, gradeCommentCtrl);
 
+    //notification
+    const notificationCtrl = require('./api/controllers/notificationController');
+    app.use(`${version}/notification`, notificationCtrl);
 
     //media
     const mediaCtrl = require('./api/controllers/mediaController');

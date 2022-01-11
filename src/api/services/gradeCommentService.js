@@ -2,7 +2,9 @@ const gradeCommentCollection = require("../collections/gradeCommentCollection");
 const gradeCommentRepository = require("../repositories/gradeCommentRepository");
 const gradeReviewRepository = require("../repositories/gradeReviewRepository");
 const userclassRepository = require("../repositories/userclassRepository");
+const classroomRepository = require('../repositories/classroomRepository');
 const usersRepository = require("../repositories/usersRepository");
+const notificationService = require('./notificationService');
 class gradeCommentService {
     constructor() {
         this.repo = new gradeCommentRepository();
@@ -10,6 +12,8 @@ class gradeCommentService {
         this.repo_grade_review = new gradeReviewRepository();
         this.repo_user_class = new userclassRepository();
         this.repo_user = new usersRepository();
+        this.noti_service = new notificationService();
+        this.repo_classroom = new classroomRepository()
     }
     async create(params) {
         if (this.isEmpty(params.review_id)) {
@@ -27,6 +31,7 @@ class gradeCommentService {
         //Verify teacher
         let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(details_grade_review.class_id));
         if (list_users_class_err) throw (list_users_class_err);
+        let checkTeacher = true
         if (!this.verifyTeacher(list_users_class, params.user_info.id)) {
             //Verify owner
             let [user_class, user_class_err] = await this.handle(this.repo_user_class.showByKey(details_grade_review.class_id, params.user_info.id));
@@ -38,6 +43,7 @@ class gradeCommentService {
             if (details_user_err) throw (details_user_err);
             if (details_user.user_code != details_grade_review.student_id )
                 throw new Error("Bạn không thể bình luận grade review này")
+            checkTeacher = false
         }
 
         let _params_new_comment = {
@@ -49,7 +55,16 @@ class gradeCommentService {
 
         let [new_comment, new_comment_err] = await this.handle(this.repo.create(_params_new_comment));
         if (new_comment_err) throw (new_comment_err);
-
+        if (checkTeacher == true)
+        {
+            let [details_class, details_class_err] = await this.handle(this.repo_classroom.show(details_grade_review.class_id));
+            if (details_class_err) throw (details_class_err);
+            for (let i = 0; i < list_users_class.length; i++)
+            {
+                if (list_users_class[i].user_code == details_grade_review.student_id)
+                    this.noti_service.create(list_users_class[i].user_id,"Có cập nhập về phúc khảo",`Yều cầu phúc khảo ở lớp ${details_class.class_name} đã có cập nhập`)
+            }
+        }
         
         return {
             success: true,

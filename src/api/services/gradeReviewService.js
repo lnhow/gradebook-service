@@ -4,6 +4,8 @@ const userclassRepository = require("../repositories/userclassRepository");
 const usersRepository = require("../repositories/usersRepository");
 const assignmentRepository = require("../repositories/assignmentRepository");
 const gradeRepository = require("../repositories/gradeRepository");
+const notificationService = require('./notificationService');
+const classroomRepository = require('../repositories/classroomRepository');
 
 
 class gradeReviewService {
@@ -15,6 +17,8 @@ class gradeReviewService {
 
         this.repo_assignment = new assignmentRepository();
         this.repo_grade = new gradeRepository();
+        this.noti_service = new notificationService();
+        this.repo_classroom = new classroomRepository()
     }
     async list(params) {
         if (this.isEmpty(params.class_id)) {
@@ -68,6 +72,7 @@ class gradeReviewService {
         let sql = this.col.finallize(is_limit);
         let [data, data_err] = await this.handle(this.repo.list(sql));
         if (data_err) throw (data_err);
+        console.log(data)
         let [total, total_err] = await this.handle(this.repo.listCount(count));
         if (total_err) throw (total_err);
 
@@ -181,6 +186,13 @@ class gradeReviewService {
 
         let [new_gradereview, new_gradereview_err] = await this.handle(this.repo.create(_params));
         if (new_gradereview_err) throw (new_gradereview_err);
+        let [details_class, details_class_err] = await this.handle(this.repo_classroom.show(assignment_detail.class_id));
+        if (details_class_err) throw (details_class_err);
+        for (let i = 0; i < list_users_class.length; i++)
+        {
+            if (list_users_class[i].role == "T")
+                this.noti_service.create(list_users_class[i].user_id,"Có yêu cầu phúc khảo mới",`Sinh viên ${params.user_info.user_code} phúc khảo ở lớp ${details_class.class_name}`)
+        }
 
         return {
             success: true,
@@ -220,10 +232,17 @@ class gradeReviewService {
             if (current_grade_err) throw (current_grade_err);
 
             if (current_grade) {
-                console.log(current_grade);
                 let [up_current_grade, up_current_grade_err] = await this.handle(this.repo_grade.update(current_grade.grade_id, {
                     grade: params.final_grade || details.final_grade
                 }));
+                let [details_class, details_class_err] = await this.handle(this.repo_classroom.show(details.class_id));
+                if (details_class_err) throw (details_class_err);
+                for (let i = 0; i < list_users_class.length; i++)
+                {
+                    if (list_users_class[i].user_code == details.student_id)
+                        this.noti_service.create(list_users_class[i].user_id,"Yêu cầu phúc khảo đã có quyết định cuối cùng",`Yêu cầu phúc khảo ở lớp ${details_class.class_name} đã có quyết định cuối cùng`)
+                }
+
                 if (up_current_grade_err) throw (up_current_grade_err)
             }
         }

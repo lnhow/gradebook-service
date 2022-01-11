@@ -60,6 +60,20 @@ class usersRepository extends BaseRepository {
         });
     }
 
+    showByStudentCodeV2(user_code) {
+        const sql = `SELECT t.* FROM ${this.table} t 
+        WHERE t.user_code = "${user_code}"`;
+        return new Promise((resolve, reject) => {
+            this.db.connection.query(sql, (err, rows) => {
+                if (err) {
+                    reject(err);
+                  } else {
+                    resolve(rows);
+                  }
+            });
+        });
+    }
+
     listByType(user_type) {
         const sql = `SELECT t.* FROM ${this.table} t 
         WHERE  t.user_type = "${user_type}"`;
