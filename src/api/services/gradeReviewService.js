@@ -188,10 +188,11 @@ class gradeReviewService {
         if (new_gradereview_err) throw (new_gradereview_err);
         let [details_class, details_class_err] = await this.handle(this.repo_classroom.show(assignment_detail.class_id));
         if (details_class_err) throw (details_class_err);
-        for (let i = 0; i < list_users_class.length; i++)
-        {
-            if (list_users_class[i].role == "T")
-                this.noti_service.create(list_users_class[i].user_id,"Có yêu cầu phúc khảo mới",`Sinh viên ${params.user_info.user_code} phúc khảo ở lớp ${details_class.class_name}`)
+        for (let i = 0; i < list_users_class.length; i++) {
+            if (list_users_class[i].role == "T") {
+                let redirect_link = `/class/${assignment_detail.class_id}/grade-review`;
+                this.noti_service.create(list_users_class[i].user_id, "Yêu cầu phúc khảo mới", `Sinh viên ${params.user_info.user_code} - ${params.user_info.full_name} phúc khảo ở lớp ${details_class.class_name} cột ${assignment_detail.title}`, redirect_link)
+            }
         }
 
         return {
@@ -210,6 +211,10 @@ class gradeReviewService {
         if (this.isEmpty(details)) {
             throw new Error("Không tìm thấy grade_review này");
         }
+
+        let [assignment_detail, assignment_detail_err] = await this.handle(this.repo_assignment.show(params.assignment_id));
+        if (assignment_detail_err) throw (assignment_detail_err);
+
         let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(details.class_id));
         if (list_users_class_err) throw (list_users_class_err);
         if (!this.verifyUser(list_users_class, params.user_info.id, 'T')) {
@@ -237,10 +242,11 @@ class gradeReviewService {
                 }));
                 let [details_class, details_class_err] = await this.handle(this.repo_classroom.show(details.class_id));
                 if (details_class_err) throw (details_class_err);
-                for (let i = 0; i < list_users_class.length; i++)
-                {
-                    if (list_users_class[i].user_code == details.student_id)
-                        this.noti_service.create(list_users_class[i].user_id,"Yêu cầu phúc khảo đã có quyết định cuối cùng",`Yêu cầu phúc khảo ở lớp ${details_class.class_name} đã có quyết định cuối cùng`)
+                for (let i = 0; i < list_users_class.length; i++) {
+                    if (list_users_class[i].user_code == details.student_id) {
+                        let redirect_link = `/class/${details.class_id}/grade`;
+                        this.noti_service.create(list_users_class[i].user_id, "Kết quả phúc khảo", `Giáo viên ${params.user_info.full_name} đã đưa ra quyết định phúc khảo cho cột ${assignment_detail.title} ở lớp ${details_class.class_name}`, redirect_link)
+                    }
                 }
 
                 if (up_current_grade_err) throw (up_current_grade_err)

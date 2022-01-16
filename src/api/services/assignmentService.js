@@ -151,21 +151,21 @@ class assignmentService {
         }
 
         let _params_update = {
-            title: params.title  || details.title,
+            title: params.title || details.title,
             weight: params.weight || details.weight,
             status: params.status || details.status,
             finalized: params.finalized || details.finalized
         }
         let [up_assign, up_assign_err] = await this.handle(this.repo.update(id, _params_update));
         if (up_assign_err) throw (up_assign_err);
-        if (params.finalized == "Y" && details.finalized == "N")
-        {
+        if (params.finalized == "Y" && details.finalized == "N") {
             let [details_class, details_class_err] = await this.handle(this.repo_classroom.show(details.class_id));
             if (details_class_err) throw (details_class_err);
-            for (let i = 0; i < list_users_class.length; i++)
-            {
-                if (list_users_class[i].role =="S")
-                    this.noti_service.create(list_users_class[i].user_id,"Đã có điểm mới",`Giáo viên đã publish một cột điểm mới ở lớp ${details_class.class_name}`)
+            for (let i = 0; i < list_users_class.length; i++) {
+                if (list_users_class[i].role == "S") {
+                    let redirect_link = `/class/${details.class_id}/grade`;
+                    this.noti_service.create(list_users_class[i].user_id, "Cột điểm mới", `Giáo viên đã publish cột ${details.title} ở lớp ${details_class.class_name}`, redirect_link);
+                }
             }
         }
 

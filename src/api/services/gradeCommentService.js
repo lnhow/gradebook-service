@@ -5,6 +5,7 @@ const userclassRepository = require("../repositories/userclassRepository");
 const classroomRepository = require('../repositories/classroomRepository');
 const usersRepository = require("../repositories/usersRepository");
 const notificationService = require('./notificationService');
+const assignmentRepository = require("../repositories/assignmentRepository");
 class gradeCommentService {
     constructor() {
         this.repo = new gradeCommentRepository();
@@ -13,7 +14,8 @@ class gradeCommentService {
         this.repo_user_class = new userclassRepository();
         this.repo_user = new usersRepository();
         this.noti_service = new notificationService();
-        this.repo_classroom = new classroomRepository()
+        this.repo_classroom = new classroomRepository();
+        this.repo_assignment = new assignmentRepository();
     }
     async create(params) {
         if (this.isEmpty(params.review_id)) {
@@ -23,11 +25,14 @@ class gradeCommentService {
             throw new Error("Vui lòng truyền content");
         }
 
-        let [details_grade_review,details_grade_review_err] = await this.handle(this.repo_grade_review.show(params.review_id))
+        let [details_grade_review, details_grade_review_err] = await this.handle(this.repo_grade_review.show(params.review_id))
         if (details_grade_review_err) throw (details_grade_review_err);
         if (this.isEmpty(details_grade_review))
             throw new Error("Không tìm thấy grade_review này")
-        
+
+        let [assignment_detail, assignment_detail_err] = await this.handle(this.repo_assignment.show(details_grade_review.assignment_id));
+        if (assignment_detail_err) throw (assignment_detail_err);
+
         //Verify teacher
         let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(details_grade_review.class_id));
         if (list_users_class_err) throw (list_users_class_err);
@@ -41,7 +46,7 @@ class gradeCommentService {
             }
             let [details_user, details_user_err] = await this.handle(this.repo_user.show(params.user_info.id));
             if (details_user_err) throw (details_user_err);
-            if (details_user.user_code != details_grade_review.student_id )
+            if (details_user.user_code != details_grade_review.student_id)
                 throw new Error("Bạn không thể bình luận grade review này")
             checkTeacher = false
         }
@@ -55,17 +60,17 @@ class gradeCommentService {
 
         let [new_comment, new_comment_err] = await this.handle(this.repo.create(_params_new_comment));
         if (new_comment_err) throw (new_comment_err);
-        if (checkTeacher == true)
-        {
+        if (checkTeacher == true) {
             let [details_class, details_class_err] = await this.handle(this.repo_classroom.show(details_grade_review.class_id));
             if (details_class_err) throw (details_class_err);
-            for (let i = 0; i < list_users_class.length; i++)
-            {
-                if (list_users_class[i].user_code == details_grade_review.student_id)
-                    this.noti_service.create(list_users_class[i].user_id,"Có cập nhập về phúc khảo",`Yều cầu phúc khảo ở lớp ${details_class.class_name} đã có cập nhập`)
+            for (let i = 0; i < list_users_class.length; i++) {
+                if (list_users_class[i].user_code == details_grade_review.student_id) {
+                    let redirect_link = `/class/${details_grade_review.class_id}/grade-review`;
+                    this.noti_service.create(list_users_class[i].user_id, "Cập nhập về phúc khảo", `${params.user_info.full_name} đã thêm bình luận mới ở cột ${assignment_detail.title} lớp ${details_class.class_name}`, redirect_link)
+                }
             }
         }
-        
+
         return {
             success: true,
             data: {
@@ -75,14 +80,13 @@ class gradeCommentService {
             message: "Tạo comment thành công"
         }
     }
-    async update(id,params)
-    {
-        
-        let [details_comment,details_comment_err] = await this.handle(this.repo.show(id))
+    async update(id, params) {
+
+        let [details_comment, details_comment_err] = await this.handle(this.repo.show(id))
         if (details_comment_err) throw (details_comment_err);
-        if (this.isEmpty(details_comment) || details_comment.status!="A")
+        if (this.isEmpty(details_comment) || details_comment.status != "A")
             throw new Error("Không tìm thấy comment này")
-        let [details_grade_review,details_grade_review_err] = await this.handle(this.repo_grade_review.show(details_comment.review_id))
+        let [details_grade_review, details_grade_review_err] = await this.handle(this.repo_grade_review.show(details_comment.review_id))
         if (details_grade_review_err) throw (details_grade_review_err);
 
         let [user_class, user_class_err] = await this.handle(this.repo_user_class.showByKey(details_grade_review.class_id, params.user_info.id));
@@ -90,7 +94,7 @@ class gradeCommentService {
         if (this.isEmpty(user_class)) {
             throw new Error("Bạn chưa tham gia lớp học này");
         }
-        if (details_comment.owner_id != params.user_info.id )
+        if (details_comment.owner_id != params.user_info.id)
             throw new Error("Bạn không thể chỉnh sửa bình luận này");
         if (!this.isEmpty(params.status) && !["N", "Y", "D"].includes(params.status)) {
             throw new Error("Status phải thuộc A,D");
@@ -108,20 +112,19 @@ class gradeCommentService {
             },
             message: "Cập nhật thành công gradeComment"
         }
-            
+
     }
 
-    async list(params)
-    {
+    async list(params) {
         if (this.isEmpty(params.review_id)) {
             throw new Error("Vui lòng truyền review_id");
         }
 
-        let [details_grade_review,details_grade_review_err] = await this.handle(this.repo_grade_review.show(params.review_id))
+        let [details_grade_review, details_grade_review_err] = await this.handle(this.repo_grade_review.show(params.review_id))
         if (details_grade_review_err) throw (details_grade_review_err);
         if (this.isEmpty(details_grade_review))
             throw new Error("Không tìm thấy grade_review này")
-        
+
         //Verify teacher
         let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(details_grade_review.class_id));
         if (list_users_class_err) throw (list_users_class_err);
@@ -134,7 +137,7 @@ class gradeCommentService {
             }
             let [details_user, details_user_err] = await this.handle(this.repo_user.show(params.user_info.id));
             if (details_user_err) throw (details_user_err);
-            if (details_user.user_code != details_grade_review.student_id )
+            if (details_user.user_code != details_grade_review.student_id)
                 throw new Error("Bạn không thể xem grade review này")
         }
 
@@ -151,15 +154,15 @@ class gradeCommentService {
             "t2.full_name,t.*",
         ]);
         this.col.join('tbl_users t2', "t.owner_id", "t2.id", "");
-        this.col.where("t.review_id","=",params.review_id);
-        this.col.where("t.status","=","A");
+        this.col.where("t.review_id", "=", params.review_id);
+        this.col.where("t.status", "=", "A");
         this.col.filters(params);
         this.col.addSort('t.created_at', 'DESC');
         let count = this.col.finallizeTotalCount();
         let sql = this.col.finallize(is_limit);
         let [data, data_err] = await this.handle(this.repo.list(sql));
         if (data_err) throw (data_err);
-        let [total,total_err] = await this.handle(this.repo.listCount(count));
+        let [total, total_err] = await this.handle(this.repo.listCount(count));
         if (total_err) throw (total_err);
 
         return {
