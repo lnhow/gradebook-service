@@ -212,7 +212,7 @@ class gradeReviewService {
             throw new Error("Không tìm thấy grade_review này");
         }
 
-        let [assignment_detail, assignment_detail_err] = await this.handle(this.repo_assignment.show(params.assignment_id));
+        let [assignment_detail, assignment_detail_err] = await this.handle(this.repo_assignment.show(details.assignment_id));
         if (assignment_detail_err) throw (assignment_detail_err);
 
         let [list_users_class, list_users_class_err] = await this.handle(this.repo_user_class.listByClassId(details.class_id));
