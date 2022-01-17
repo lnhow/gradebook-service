@@ -279,9 +279,10 @@ class usersService {
         if (!this.isEmpty(params.status) && !["A", "I", "D"].includes(params.status)) {
             throw new Error("Status phải thuộc A,I,D");
         }
-        let {full_name,user_code,date_of_birth,phone,sex,avatar,status} = detailsUser
+        let {username, full_name,user_code,date_of_birth,phone,sex,avatar,status} = detailsUser
         console.log(detailsUser)
         let _params_update = {
+            username: params.username || username,
             full_name: params.full_name || full_name,
             user_code: params.user_code || user_code,
             date_of_birth: params.date_of_birth || date_of_birth,
