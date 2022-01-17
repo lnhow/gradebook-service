@@ -7,6 +7,9 @@ const service = new sessionService();
 
 const strategyOptions = {
   tokenHeader: config.api.auth_header,
+  tokenQuery: config.api.auth_header,
+  tokenParams: config.api.auth_header,
+  tokenField: config.api.auth_header,
 }
 
 passport.use(new UniqueTokenStrategy(strategyOptions,
