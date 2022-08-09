@@ -21,9 +21,20 @@ const getClientHost = () => {
   return process.env.CLIENT_HOST || DEFAULT_CLIENT_HOST;
 }
 
+const getMailConfig = () => {
+  return {
+    host: process.env.DB_HOST || '',
+    port: process.env.DB_PORT || '3306',
+    username: process.env.DB_USERNAME || "",
+    dbname: process.env.DB_NAME || "",
+    passwrd: process.env.DB_PASSWORD || "",
+  }
+}
+
 module.exports = {
   getSmtpMailUsername,
   getSmtpMailPassword,
   getGoogleOauthClientID,
   getClientHost,
+  getMailConfig,
 }

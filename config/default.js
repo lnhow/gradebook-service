@@ -30,13 +30,7 @@ module.exports = {
         google:  DefaultConfig.getGoogleOauthClientID(),
     },
 
-    mysqldb: {
-        host: 'b04wqnwkn9xxov6ohypk-mysql.services.clever-cloud.com',
-        port: '3306',
-        username: "uxqqsoofqrilu9ph",
-        dbname: "b04wqnwkn9xxov6ohypk",
-        passwrd: "bQ1b6s23Dwho8wOwtHNH",
-    },
+    mysqldb: DefaultConfig.getMailConfig(),
 
     logger: {
         console: {
